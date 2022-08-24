@@ -24,7 +24,7 @@ jobs:
       -
         name: Run Test Suite
         run: |
-          gotestsum -- -race -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+          gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
       -
