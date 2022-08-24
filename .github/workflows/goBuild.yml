@@ -1,0 +1,22 @@
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.18', '1.19']
+    steps:
+      -
+        name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      -
+        name: Checkout Code
+        uses: actions/checkout@v3
+      -
+        name: Build
+        run: V=1 make build

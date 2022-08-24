@@ -1,0 +1,20 @@
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Configure Linter
+        if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
+        run: |
+          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.48
