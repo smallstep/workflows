@@ -9,14 +9,11 @@ jobs:
       matrix:
         go: ['1.18', '1.19']
     steps:
-      -
-        name: Install Go
+      - name: Install Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
-      -
-        name: Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v3
-      -
-        name: Build
+      - name: Build
         run: V=1 make build

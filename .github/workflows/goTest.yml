@@ -9,32 +9,26 @@ jobs:
       matrix:
         go: ['1.18', '1.19']
     steps:
-      -
-        name: Install Go
+      - name: Install Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
-      -
-        name: Install gotestsum
+      - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v1.8.1
-      -
-        name: Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v3
-      -
-        name: Run Test Suite
+      - name: Run Test Suite
         run: |
           gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
-      -
-        name: Annotate Test Suite Results
+      - name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
         uses: guyarb/golang-test-annotations@v0.5.1
         with:
           test-results: gotestsum.json
-      -
-        name: Codecov
+      - name: Codecov
         uses: codecov/codecov-action@v1.2.1
         if: matrix.go == '1.19'
         with:
