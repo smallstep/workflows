@@ -19,4 +19,4 @@ jobs:
       - name: Run Linter
         uses: golangci/golangci-lint-action@v3
         with:
-          version: ${{ secrets.GOLANGCI_LINT_VERSION }}
+          version: v1.49
