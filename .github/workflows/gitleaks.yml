@@ -1,0 +1,25 @@
+name: gitleaks
+on:
+  workflow_call:
+
+jobs:
+  scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      -
+        name: Configure GitLeaks
+        if:  ${{ hashFiles('.gitleaks.toml') == '' }}
+        run: |
+          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.gitleaks.toml
+      -
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE_KEY}} # Only required for Organizations, not personal accounts.
+          GITLEAKS_CONFIG: '.gitleaks.toml'
+          GITLEAKS_NOTIFY_USER_LIST: '@dopey,@maraino,@joshdrake'

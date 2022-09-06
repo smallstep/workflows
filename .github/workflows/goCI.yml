@@ -1,0 +1,18 @@
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+
+  govulncheck:
+    needs: lint
+    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
+
+  test:
+    needs: govulncheck
+    uses: smallstep/workflows/.github/workflows/goTest.yml@main
+
+  build:
+    needs: test
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
