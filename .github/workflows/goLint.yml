@@ -3,7 +3,6 @@ on:
 
 jobs:
   lint:
-    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go
@@ -22,7 +21,6 @@ jobs:
           version: v1.49
 
   govulncheck:
-    name: govulncheck
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go

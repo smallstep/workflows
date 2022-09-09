@@ -3,7 +3,6 @@ on:
 
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
