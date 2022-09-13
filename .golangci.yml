@@ -325,6 +325,7 @@ issues:
       linters:
         - bodyclose
         - dupl
+        - errcheck
         - funlen
         - goconst
         - gosec
