@@ -13,6 +13,9 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
+      - name: Install libpcsclite-dev # Some dependencies require this package
+        run: |
+          sudo apt-get install libpcsclite-dev
       - name: Checkout Code
         uses: actions/checkout@v3
       - name: Build

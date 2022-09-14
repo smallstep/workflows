@@ -16,6 +16,9 @@ jobs:
       - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v1.8.1
+      - name: Install libpcsclite-dev # Some dependencies require this package
+        run: |
+          sudo apt-get install libpcsclite-dev
       - name: Checkout Code
         uses: actions/checkout@v3
       - name: Run Test Suite
