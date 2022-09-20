@@ -308,6 +308,7 @@ issues:
     - should have a package comment, unless it's in another file for this package
     - func `CLICommand.
     - error strings should not be capitalized or end with punctuation or a newline
+    - Function `URLParam->URLParam` should pass the context parameter
 
   exclude-rules:
     - source: "^//\\s*go:generate\\s"
@@ -321,6 +322,7 @@ issues:
     - path: "_test\\.go"
       linters:
         - bodyclose
+        - contextcheck
         - dupl
         - errcheck
         - funlen
