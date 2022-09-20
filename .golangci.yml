@@ -126,9 +126,6 @@ linters-settings:
     replace-allow-list:
       - go.mozilla.org/pkcs7
 
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-
   govet:
     check-shadowing: true
     # Enable all analyzers.
