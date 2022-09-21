@@ -12,6 +12,9 @@ jobs:
           check-latest: true
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Install libpcsclite-dev # Some dependencies require this package
+        run: |
+          sudo apt-get install libpcsclite-dev
       - name: Configure Linter
         if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
         run: |
