@@ -1,0 +1,49 @@
+on:
+  workflow_call:
+    inputs:
+      cgo:
+        required: false
+        type: boolean
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: false
+      PAT:
+        required: false
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install libpcsclite-dev # Some dependencies require this package
+        if: ${{ inputs.cgo }}
+        run: |
+          sudo apt-get install libpcsclite-dev
+      - name: Setup SSH key for private dependencies
+        uses: webfactory/ssh-agent@v0.5.3
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          check-latest: true
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          submodules: true
+      - name: Configure Linter
+        if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
+        run: |
+          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.49
+
+  govulncheck:
+    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
