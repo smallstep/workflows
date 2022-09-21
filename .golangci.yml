@@ -35,6 +35,9 @@ linters-settings:
     # Default: false
     check-type-assertions: true
 
+  errorlint:
+    asserts: false
+
   funlen:
     # Checks the number of lines in a function.
     # If lower than 0, disable the check.
