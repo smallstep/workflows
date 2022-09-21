@@ -6,9 +6,7 @@ jobs:
     uses: smallstep/workflows/.github/workflows/goLint.yml@main
 
   test:
-    needs: lint
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
 
   build:
-    needs: test
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
