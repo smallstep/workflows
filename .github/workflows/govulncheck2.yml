@@ -11,7 +11,8 @@ on:
         required: false
 
 jobs:
-  lint:
+  govulncheck:
+    name: govulncheck
     runs-on: ubuntu-latest
     steps:
       - name: Install libpcsclite-dev # Some dependencies require this package
@@ -36,17 +37,7 @@ jobs:
         with:
           go-version: 1.19
           check-latest: true
-      - name: Configure Linter
-        if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
-        run: |
-          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
-      - name: Run Linter
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.49
-
-  govulncheck:
-    uses: smallstep/workflows/.github/workflows/govulncheck2.yml@main
-    with:
-      cgo: ${{ inputs.cgo }}
-    secrets: inherit
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Run govulncheck
+        run: govulncheck ./...
