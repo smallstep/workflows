@@ -1,9 +1,9 @@
 on:
   workflow_call:
     inputs:
-      cgo:
+      os-dependencies:
         required: false
-        type: boolean
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -14,10 +14,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Install libpcsclite-dev # Some dependencies require this package
-        if: ${{ inputs.cgo }}
+      - name: Install Dependencies # Some dependencies require this package
+        if: ${{ inputs.os-dependencies != '' }}
         run: |
-          sudo apt-get install libpcsclite-dev
+          sudo apt-get install ${{ inputs.os-dependencies }}
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@v0.5.3
         env:
@@ -58,5 +58,5 @@ jobs:
   govulncheck:
     uses: smallstep/workflows/.github/workflows/govulncheck2.yml@main
     with:
-      cgo: ${{ inputs.cgo }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
