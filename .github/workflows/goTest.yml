@@ -1,5 +1,16 @@
 on:
   workflow_call:
+    inputs:
+      os-dependencies:
+        required: false
+        type: string
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: false
+      PAT:
+        required: false
+      CODECOV_TOKEN:
+        required: false
 
 jobs:
   test:
@@ -8,6 +19,33 @@ jobs:
       matrix:
         go: ['1.18', '1.19']
     steps:
+      - name: Install Dependencies
+        if: ${{ inputs.os-dependencies != '' }}
+        run: |
+          sudo apt-get install ${{ inputs.os-dependencies }}
+      - name: Setup SSH key for private dependencies
+        uses: webfactory/ssh-agent@v0.5.3
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Checkout w/ PAT
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          submodules: true
+      - name: Checkout w/out PAT
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT == '' }}
+        uses: actions/checkout@v2
+        with:
+          submodules: true
       - name: Install Go
         uses: actions/setup-go@v3
         with:
@@ -16,11 +54,6 @@ jobs:
       - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v1.8.1
-      - name: Install libpcsclite-dev # Some dependencies require this package
-        run: |
-          sudo apt-get install libpcsclite-dev
-      - name: Checkout Code
-        uses: actions/checkout@v3
       - name: Run Test Suite
         run: |
           gotestsum -- -coverprofile=coverage.out -covermode=atomic ./...

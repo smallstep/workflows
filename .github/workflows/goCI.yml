@@ -1,13 +1,33 @@
 on:
   workflow_call:
+    inputs:
+      os-dependencies:
+        required: false
+        type: string
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: false
+      PAT:
+        required: false
+      CODECOV_TOKEN:
+        required: false
 
 jobs:
   lint:
     uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    with:
+      os-dependencies: ${{ inputs.os-dependencies }}
+    secrets: inherit
 
   test:
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    with:
+      os-dependencies: ${{ inputs.os-dependencies }}
+    secrets: inherit
 
   build:
-    if:  hashFiles('Makefile') != ''
+    if: hashFiles('Makefile') != ''
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    with:
+      os-dependencies: ${{ inputs.os-dependencies }}
+    secrets: inherit
