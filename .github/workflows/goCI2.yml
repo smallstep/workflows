@@ -1,0 +1,12 @@
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    uses: smallstep/workflows/.github/workflows/goLint2.yml@main
+
+  test:
+    uses: smallstep/workflows/.github/workflows/goTest2.yml@main
+
+  build:
+    uses: smallstep/workflows/.github/workflows/goBuild2.yml@main
