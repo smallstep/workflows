@@ -27,10 +27,20 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Checkout
+      - name: Checkout w/ PAT
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.PAT }}
+          submodules: true
+      - name: Checkout w/out PAT
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT == '' }}
+        uses: actions/checkout@v2
+        with:
           submodules: true
       - name: Setup Go
         uses: actions/setup-go@v3
