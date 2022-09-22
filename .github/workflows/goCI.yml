@@ -9,4 +9,5 @@ jobs:
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
 
   build:
+    if:  hashFiles('Makefile') != ''
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
