@@ -26,7 +26,7 @@ jobs:
     secrets: inherit
 
   build:
-    if: ${{ hashFiles('Makefile') != '' }}
+    if: ${{ always() && hashFiles('Makefile') != '' }}
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
