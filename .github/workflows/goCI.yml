@@ -1,9 +1,9 @@
 on:
   workflow_call:
     inputs:
-      cgo:
+      os-dependencies:
         required: false
-        type: boolean
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -14,20 +14,20 @@ on:
 
 jobs:
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint2.yml@main
+    uses: smallstep/workflows/.github/workflows/goLint.yml@main
     with:
-      cgo: ${{ inputs.cgo }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
   test:
-    uses: smallstep/workflows/.github/workflows/goTest2.yml@main
+    uses: smallstep/workflows/.github/workflows/goTest.yml@main
     with:
-      cgo: ${{ inputs.cgo }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
   build:
-    if:  hashFiles('Makefile') != ''
-    uses: smallstep/workflows/.github/workflows/goBuild2.yml@main
+    if: hashFiles('Makefile') != ''
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
     with:
-      cgo: ${{ inputs.cgo }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit

@@ -1,9 +1,9 @@
 on:
   workflow_call:
     inputs:
-      cgo:
+      os-dependencies:
         required: false
-        type: boolean
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -17,10 +17,10 @@ jobs:
       matrix:
         go: ['1.18', '1.19']
     steps:
-      - name: Install libpcsclite-dev # Some dependencies require this package
-        if: ${{ inputs.cgo }}
+      - name: Install Dependencies # Some dependencies require this package
+        if: ${{ inputs.os-dependencies != '' }}
         run: |
-          sudo apt-get install libpcsclite-dev
+          sudo apt-get install ${{ inputs.os-dependencies }}
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@v0.5.3
         env:
