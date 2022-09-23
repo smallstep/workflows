@@ -4,12 +4,20 @@ on:
       os-dependencies:
         required: false
         type: string
+      gitleaks:
+        required: false
+        type: boolean
+      codeql:
+        required: false
+        type: boolean
     secrets:
       SSH_PRIVATE_KEY:
         required: false
       PAT:
         required: false
       CODECOV_TOKEN:
+        required: false
+      GITLEAKS_LICENSE_KEY:
         required: false
 
 jobs:
@@ -18,6 +26,16 @@ jobs:
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
+
+  gitleaks:
+    if: inputs.gitleaks
+    uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
+    secrets:
+      GITLEAKS_LICENSE_KEY: ${{ secrets.GITLEAKS_LICENSE_KEY }}
+
+  codeql:
+    if: inputs.codeql
+    uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
 
   test:
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
