@@ -13,17 +13,18 @@ title = "gitleaks config"
 [allowlist]
 description = "global allow lists"
 paths = [
-    '''gitleaks.toml''',
     '''(.*?)(jpg|gif|doc|docx|zip|xls|pdf|bin|svg|socket)$''',
     '''(go.mod|go.sum)$''',
-    '''node_modules''',
-    '''vendor''',
     '''_test.go''',
-    '''testdata''',
-    '''test_utils''',
-    '''test_files''',
-    '''pkg''',
     '''cosign.key''',
+    '''gitleaks.toml''',
+    '''node_modules''',
+    '''pkg''',
+    '''test_certs''',
+    '''test_files''',
+    '''test_utils''',
+    '''testdata''',
+    '''vendor''',
 ]
 
 [[rules]]
