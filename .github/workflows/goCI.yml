@@ -4,12 +4,26 @@ on:
       os-dependencies:
         required: false
         type: string
-      gitleaks:
+      run-lint:
         required: false
         type: boolean
-      codeql:
+        default: true
+      run-gitleaks:
         required: false
         type: boolean
+        default: false
+      run-codeql:
+        required: false
+        type: boolean
+        default: false
+      run-test:
+        required: false
+        type: boolean
+        default: true
+      run-build:
+        required: false
+        type: boolean
+        default: true
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -23,28 +37,31 @@ on:
 jobs:
   lint:
     uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    if: inputs.run-lint
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
   gitleaks:
-    if: inputs.gitleaks
+    if: inputs.run-gitleaks
     uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
     secrets:
       GITLEAKS_LICENSE_KEY: ${{ secrets.GITLEAKS_LICENSE_KEY }}
 
   codeql:
-    if: inputs.codeql
+    if: inputs.run-codeql
     uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
 
   test:
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
   build:
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    if: inputs.run-build
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
