@@ -17,6 +17,7 @@ paths = [
     '''(go.mod|go.sum)$''',
     '''_test.go''',
     '''cosign.key''',
+    '''examples''',
     '''gitleaks.toml''',
     '''node_modules''',
     '''pkg''',
