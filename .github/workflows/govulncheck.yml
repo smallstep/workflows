@@ -12,8 +12,9 @@ on:
 
 jobs:
   govulncheck:
-    name: govulncheck
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: go.step.sm
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
@@ -31,7 +32,7 @@ jobs:
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
           submodules: true
@@ -39,9 +40,15 @@ jobs:
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT == '' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Reconfigure Git for HTTP Auth
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+        run: |
+          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
