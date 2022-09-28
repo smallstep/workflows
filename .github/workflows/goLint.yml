@@ -13,6 +13,8 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: go.step.sm
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
@@ -41,6 +43,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Reconfigure Git for HTTP Auth
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+        run: |
+          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
       - name: Setup Go
         uses: actions/setup-go@v3
         with:

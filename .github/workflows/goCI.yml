@@ -45,8 +45,7 @@ jobs:
   gitleaks:
     if: inputs.run-gitleaks
     uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
-    secrets:
-      GITLEAKS_LICENSE_KEY: ${{ secrets.GITLEAKS_LICENSE_KEY }}
+    secrets: inherit
 
   codeql:
     if: inputs.run-codeql
