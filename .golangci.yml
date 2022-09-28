@@ -126,6 +126,7 @@ linters-settings:
             reason: "see recommendation from dev-infra team: https://confluence.gtforge.com/x/gQI6Aw"
 
   gomoddirectives:
+    replace-local: true
     replace-allow-list:
       - go.mozilla.org/pkcs7
       - go.step.sm/rpc
