@@ -43,7 +43,7 @@ jobs:
     secrets: inherit
 
   gitleaks:
-    if: inputs.run-gitleaks && never()
+    if: inputs.run-gitleaks && false
     uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
     secrets: inherit
 

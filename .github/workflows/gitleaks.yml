@@ -8,7 +8,7 @@ on:
 
 jobs:
   gitleaks:
-    if: never()
+    if: false
     runs-on: ubuntu-latest
     permissions:
       actions: read
