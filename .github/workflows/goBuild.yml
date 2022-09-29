@@ -57,5 +57,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
+          cache: true
       - name: Build
         run: V=1 make build

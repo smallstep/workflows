@@ -54,6 +54,7 @@ jobs:
         with:
           go-version: 1.19
           check-latest: true
+          cache: true
       - name: Configure Linter
         if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
         run: |
