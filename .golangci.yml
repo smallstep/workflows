@@ -130,6 +130,7 @@ linters-settings:
     replace-allow-list:
       - go.mozilla.org/pkcs7
       - go.step.sm/rpc
+      - github.com/elimity-com/scim
 
   govet:
     check-shadowing: true
