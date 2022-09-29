@@ -49,11 +49,22 @@ jobs:
         if:  hashFiles('.gitleaks.toml') == ''
         run: |
           curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.gitleaks.toml
-      - uses: gitleaks/gitleaks-action@v2
+      - name: gitleaks w/ PAT
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE_KEY }}
+          GITLEAKS_ENABLE_COMMENTS: true
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE_KEY }}
           GITLEAKS_ENABLE_COMMENTS: true
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT == '' }}
       - uses: github/codeql-action/upload-sarif@v2
         if: always() && hashFiles('results.sarif') != ''
         with:
