@@ -42,10 +42,11 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
-  gitleaks:
-    if: inputs.run-gitleaks && false
-    uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
-    secrets: inherit
+      # Removed because Github Code Scanning is covering the same territory.
+      #gitleaks:
+      #  if: inputs.run-gitleaks && false
+      #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
+      #  secrets: inherit
 
   codeql:
     if: inputs.run-codeql

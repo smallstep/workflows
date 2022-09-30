@@ -14,11 +14,12 @@ on:
         required: false
 
 jobs:
-  gitleaks:
-    if: inputs.run-gitleaks && false
-    uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
-    secrets:
-      GITLEAKS_LICENSE_KEY: ${{ secrets.GITLEAKS_LICENSE_KEY }}
+  # Removed because Github Code Scanning is covering the same territory.
+  #gitleaks:
+  #  if: inputs.run-gitleaks && false
+  #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
+  #  secrets:
+  #    GITLEAKS_LICENSE_KEY: ${{ secrets.GITLEAKS_LICENSE_KEY }}
 
   codeql:
     if: inputs.run-codeql
