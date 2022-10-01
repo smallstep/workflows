@@ -48,6 +48,13 @@ jobs:
       #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
       #  secrets: inherit
 
+  govulncheck:
+    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
+    if: inputs.run-lint
+    with:
+      os-dependencies: ${{ inputs.os-dependencies }}
+    secrets: inherit
+
   codeql:
     if: inputs.run-codeql
     uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main

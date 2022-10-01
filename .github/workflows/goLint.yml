@@ -64,9 +64,3 @@ jobs:
         with:
           version: v1.49
           args: --timeout=30m
-
-  govulncheck:
-    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
-    with:
-      os-dependencies: ${{ inputs.os-dependencies }}
-    secrets: inherit
