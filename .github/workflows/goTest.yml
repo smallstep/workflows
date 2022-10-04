@@ -67,7 +67,7 @@ jobs:
         run: |
           go install gotest.tools/gotestsum@v1.8.1
       - name: Run Default Test Suite
-        if: !inputs.make-test
+        if: inputs.make-test == false
         run: |
           gotestsum -- -coverprofile=coverage.out -covermode=atomic ./...
         env:
