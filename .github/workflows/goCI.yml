@@ -20,6 +20,10 @@ on:
         required: false
         type: boolean
         default: true
+      make-test:
+        required: false
+        type: boolean
+        default: false
       run-build:
         required: false
         type: boolean
@@ -64,6 +68,7 @@ jobs:
     if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
+      make-test: ${{ inputs.make-test }}
     secrets: inherit
 
   build:

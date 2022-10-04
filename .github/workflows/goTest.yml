@@ -4,6 +4,9 @@ on:
       os-dependencies:
         required: false
         type: string
+      make-test:
+        required: false
+        type: boolean
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -63,11 +66,15 @@ jobs:
       - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v1.8.1
-      - name: Run Test Suite
+      - name: Run Default Test Suite
+        if: !inputs.make-test
         run: |
           gotestsum -- -coverprofile=coverage.out -covermode=atomic ./...
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
+      - name: Run make test
+        if: inputs.make-test
+        run: make test
       - name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
         uses: guyarb/golang-test-annotations@v0.5.1
