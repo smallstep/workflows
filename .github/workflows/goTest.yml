@@ -36,22 +36,11 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Checkout w/ PAT
-        env:
-          PAT: ${{ secrets.PAT }}
-        if: ${{ env.PAT != '' }}
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.PAT }}
-          submodules: true
-      - name: Checkout w/out PAT
-        env:
-          PAT: ${{ secrets.PAT }}
-        if: ${{ env.PAT == '' }}
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Reconfigure Git for HTTP Auth
+      - name: Reconfigure Git go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
