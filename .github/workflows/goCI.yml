@@ -40,7 +40,7 @@ on:
 
 jobs:
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    uses: smallstep/workflows/.github/workflows/goLint.yml@max/ssh
     if: inputs.run-lint
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
@@ -49,11 +49,11 @@ jobs:
       # Removed because Github Code Scanning is covering the same territory.
       #gitleaks:
       #  if: inputs.run-gitleaks && false
-      #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
+      #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@max/ssh
       #  secrets: inherit
 
   govulncheck:
-    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
+    uses: smallstep/workflows/.github/workflows/govulncheck.yml@max/ssh
     if: false
       #if: inputs.run-lint
     with:
@@ -62,10 +62,10 @@ jobs:
 
   codeql:
     if: inputs.run-codeql
-    uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
+    uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@max/ssh
 
   test:
-    uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    uses: smallstep/workflows/.github/workflows/goTest.yml@max/ssh
     if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
@@ -73,7 +73,7 @@ jobs:
     secrets: inherit
 
   build:
-    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@max/ssh
     if: inputs.run-build
     with:
       os-dependencies: ${{ inputs.os-dependencies }}

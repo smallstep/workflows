@@ -33,7 +33,7 @@ jobs:
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Reconfigure Git go.step.sm
+      - name: Reconfigure for Git go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
@@ -46,6 +46,14 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
+      - name: Setup SSH key for private dependencies
+        uses: webfactory/ssh-agent@v0.5.3
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v1.8.1
