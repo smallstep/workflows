@@ -54,7 +54,8 @@ jobs:
 
   govulncheck:
     uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
-    if: inputs.run-lint
+    if: false
+      #if: inputs.run-lint
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
