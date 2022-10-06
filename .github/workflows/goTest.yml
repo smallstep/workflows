@@ -28,18 +28,11 @@ jobs:
         if: ${{ inputs.os-dependencies != '' }}
         run: |
           sudo apt-get install ${{ inputs.os-dependencies }}
-      - name: Setup SSH key for private dependencies
-        uses: webfactory/ssh-agent@v0.5.3
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        if: ${{ env.SSH_PRIVATE_KEY != '' }}
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: true
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Reconfigure Git go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
