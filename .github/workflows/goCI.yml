@@ -24,6 +24,10 @@ on:
         required: false
         type: boolean
         default: false
+      test-install-bats:
+        required: false
+        type: boolean
+        default: false
       run-build:
         required: false
         type: boolean
@@ -70,6 +74,7 @@ jobs:
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       make-test: ${{ inputs.make-test }}
+      install-bats: ${{ inputs.test-install-bats }}
     secrets: inherit
 
   build:
