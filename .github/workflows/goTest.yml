@@ -7,9 +7,6 @@ on:
       make-test:
         required: false
         type: boolean
-      install-bats:
-        required: false
-        type: boolean
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -66,11 +63,6 @@ jobs:
           gotestsum -- -coverprofile=coverage.out -covermode=atomic ./...
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
-      - name: Setup BATS
-        if: inputs.make-test && inputs.install-bats
-        uses: mig4/setup-bats@v1
-        with:
-          bats-version: 1.2.1
       - name: Run make test
         if: inputs.make-test
         run: make test
