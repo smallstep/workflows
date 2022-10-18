@@ -20,7 +20,6 @@ jobs:
     name: Label PR
     if: (inputs.run-label-pr) && (github.event_name == 'pull_request_target')
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target'
     steps:
     - uses: actions/labeler@v4
       with:
