@@ -1,0 +1,40 @@
+name: Triage
+
+on:
+  workflow_call:
+    secrets:
+      TRIAGE_PAT:
+        required: false
+    inputs:
+      run-label-pr:
+        required: false
+        type: boolean
+        default: true
+      run-add-to-oss-triage-project:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  label-pr:
+    name: Label PR
+    if: (inputs.run-label-pr) && (github.event_name == 'pull_request_target')
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+    - uses: actions/labeler@v4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  add-oss-project:
+    name: Add to OSS Triage Project
+    if: (inputs.run-add-to-oss-triage-project)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v0.3.0
+        with:
+          project-url: https://github.com/orgs/smallstep/projects/94
+          github-token: ${{ secrets.TRIAGE_PAT }}
+
+
+
