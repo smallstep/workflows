@@ -1,0 +1,17 @@
+name: Label PR
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+    - uses: actions/labeler@v4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
