@@ -19,22 +19,21 @@ jobs:
   label-pr:
     name: Label PR
     if: (inputs.run-label-pr) && (github.event_name == 'pull_request_target')
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     runs-on: ubuntu-latest
     steps:
+    - name: Install GH CLI
+      mkdir ../bin
+    	curl -L https://github.com/cli/cli/releases/download/v2.8.0/gh_2.8.0_linux_amd64.tar.gz \
+        | tar xzvf - --strip-components=2 -C ../bin/ "gh_2.8.0_linux_amd64/bin/gh"
+
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Configure Labeler
-      if:  ${{ hashFiles('.github/labeler.yml') == '' }}
+    - name: Label PR
       run: |
-        curl -o .github/labeler.yml https://raw.githubusercontent.com/smallstep/workflows/.github/labeler.yml
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
-    - uses: actions/labeler@v4
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        ../bin/gh pr edit ${{ .github.event.number }} --add-label "needs triage"
 
   add-oss-project:
     name: Add to OSS Triage Project
