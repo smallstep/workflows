@@ -21,9 +21,15 @@ jobs:
     if: (inputs.run-label-pr) && (github.event_name == 'pull_request_target')
     runs-on: ubuntu-latest
     steps:
+    - name: Configure Labeler
+      if:  ${{ hashFiles('.github/labeler.yml') == '' }}
+      run: |
+        curl -O https://raw.githubusercontent.com/smallstep/workflows/.github/labeler.yml
+
     - uses: actions/labeler@v4
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: labeler.yml
 
   add-oss-project:
     name: Add to OSS Triage Project
