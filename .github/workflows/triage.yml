@@ -26,7 +26,7 @@ jobs:
     - name: Install GH CLI
       run: |
         mkdir ../bin
-    	  curl -L https://github.com/cli/cli/releases/download/v2.8.0/gh_2.8.0_linux_amd64.tar.gz \
+        curl -L https://github.com/cli/cli/releases/download/v2.8.0/gh_2.8.0_linux_amd64.tar.gz \
           | tar xzvf - --strip-components=2 -C ../bin/ "gh_2.8.0_linux_amd64/bin/gh"
 
     - name: Checkout
