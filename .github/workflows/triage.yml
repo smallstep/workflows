@@ -37,7 +37,7 @@ jobs:
 
     - name: Label PR
       run: |
-        ../bin/gh pr edit ${{ .github.event.pull_request.number }} --add-label "needs triage"
+        ../bin/gh pr edit ${{ github.event.pull_request.number }} --add-label "needs triage"
 
   add-oss-project:
     name: Add to OSS Triage Project
