@@ -21,10 +21,13 @@ jobs:
     if: (inputs.run-label-pr) && (github.event_name == 'pull_request_target')
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Configure Labeler
       if:  ${{ hashFiles('.github/labeler.yml') == '' }}
       run: |
-        curl -O https://raw.githubusercontent.com/smallstep/workflows/.github/labeler.yml
+        curl -o .github/labeler.yml https://raw.githubusercontent.com/smallstep/workflows/.github/labeler.yml
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -32,7 +35,6 @@ jobs:
     - uses: actions/labeler@v4
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-        configuration-path: ./labeler.yml
 
   add-oss-project:
     name: Add to OSS Triage Project
@@ -43,6 +45,3 @@ jobs:
         with:
           project-url: https://github.com/orgs/smallstep/projects/94
           github-token: ${{ secrets.TRIAGE_PAT }}
-
-
-
