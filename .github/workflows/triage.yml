@@ -23,6 +23,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     runs-on: ubuntu-latest
     steps:
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
     - name: Install GH CLI
       run: |
         mkdir ../bin
@@ -34,7 +37,7 @@ jobs:
 
     - name: Label PR
       run: |
-        ../bin/gh pr edit ${{ .github.event.number }} --add-label "needs triage"
+        ../bin/gh pr edit ${{ .github.event.pull_request.number }} --add-label "needs triage"
 
   add-oss-project:
     name: Add to OSS Triage Project
