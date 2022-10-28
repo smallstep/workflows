@@ -22,7 +22,6 @@ jobs:
   build_upload_docker:
     name: Build & Upload Docker Images
     runs-on: ubuntu-latest
-    needs: create_release
     env:
       DOCKER_IMAGE: smallstep/step-cli
     permissions:
