@@ -26,8 +26,6 @@ jobs:
   build_upload_docker:
     name: Build & Upload Docker Images
     runs-on: ubuntu-latest
-    env:
-      DOCKER_IMAGE: smallstep/step-cli
     permissions:
       id-token: write
       contents: write
@@ -62,6 +60,6 @@ jobs:
       - name: Cosign
         id: cosign
         run: |
-          cosign sign ${{ inputs.docker_image }}@${{ steps.build-and-push.outputs.digest }}
+          cosign sign -r ${{ inputs.docker_image }}@${{ steps.build-and-push.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: 1
