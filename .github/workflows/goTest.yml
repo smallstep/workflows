@@ -60,7 +60,7 @@ jobs:
       - name: Run Default Test Suite
         if: inputs.make-test == false
         run: |
-          gotestsum -- -coverprofile=coverage.out -covermode=atomic ./...
+          gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
       - name: Run make test
