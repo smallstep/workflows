@@ -28,6 +28,9 @@ on:
         required: false
         type: boolean
         default: true
+      only-latest-golang:
+        required: false
+        type: boolean
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -46,12 +49,6 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
-      # Removed because Github Code Scanning is covering the same territory.
-      #gitleaks:
-      #  if: inputs.run-gitleaks && false
-      #  uses: smallstep/workflows/.github/workflows/gitleaks.yml@main
-      #  secrets: inherit
-
   govulncheck:
     uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
     if: inputs.run-lint
@@ -69,6 +66,7 @@ jobs:
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       make-test: ${{ inputs.make-test }}
+      only-latest-golang: ${{ inputs.only-latest-golang }}
     secrets: inherit
 
   build:
@@ -76,4 +74,5 @@ jobs:
     if: inputs.run-build
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
+      only-latest-golang: ${{ inputs.only-latest-golang }}
     secrets: inherit

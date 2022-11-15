@@ -4,6 +4,10 @@ on:
       os-dependencies:
         required: false
         type: string
+      only-latest-golang:
+        required: false
+        type: boolean
+        default: false
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -11,13 +15,32 @@ on:
         required: false
 
 jobs:
+  set-go-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-output.outputs.matrix }}
+    steps:
+      - name: Set go-matrix latest version
+        id: set-matrix-latest
+        if: inputs.only-latest-golang
+        run: |
+          echo "matrix={\"include\":[{\"go\":\"1.19\"}]}" >> ${GITHUB_ENV}
+      - name: Set default go-matrix
+        id: set-matrix-default
+        if: inputs.only-latest-golang == false
+        run: |
+          echo "matrix={\"include\":[{\"go\":\"1.18\"},{\"go\":\"1.19\"}]}" >> ${GITHUB_ENV}
+      - id: set-output
+        run: |
+          echo "matrix=${{ env.matrix }}" >> ${GITHUB_OUTPUT}
+
   build:
+    needs: set-go-matrix
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: go.step.sm
     strategy:
-      matrix:
-        go: ['1.18', '1.19']
+      matrix: ${{ fromJson(needs.set-go-matrix.outputs.matrix) }}
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
