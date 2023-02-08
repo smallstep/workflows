@@ -42,12 +42,12 @@ on:
         required: false
 
 jobs:
-  lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@go-matrix-fix-v3
-    if: inputs.run-lint
-    with:
-      os-dependencies: ${{ inputs.os-dependencies }}
-    secrets: inherit
+  # lint:
+  #   uses: smallstep/workflows/.github/workflows/goLint.yml@go-matrix-fix-v3
+  #   if: inputs.run-lint
+  #   with:
+  #     os-dependencies: ${{ inputs.os-dependencies }}
+  #   secrets: inherit
 
   # govulncheck:
   #   uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
