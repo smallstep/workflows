@@ -61,7 +61,7 @@ jobs:
     uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
 
   test:
-    uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    uses: smallstep/workflows/.github/workflows/goTest.yml@go-matrix-fix-v3
     if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
@@ -70,7 +70,7 @@ jobs:
     secrets: inherit
 
   build:
-    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@go-matrix-fix-v3
     if: inputs.run-build
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
