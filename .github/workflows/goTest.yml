@@ -34,7 +34,7 @@ jobs:
         id: set-matrix-default
         if: inputs.only-latest-golang == false
         run: |
-          echo 'matrix={"include":[{"go":"\\"1.20\\""},{"go":"1.19"}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"1.20\""},{"go":"\"1.19\""}]}' >> ${GITHUB_ENV}
       - id: set-output
         run: |
           echo "matrix=${{ env.matrix }}" >> ${GITHUB_OUTPUT}
