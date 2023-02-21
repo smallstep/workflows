@@ -130,6 +130,7 @@ linters-settings:
       - go.mozilla.org/pkcs7
       - go.step.sm/rpc
       - github.com/elimity-com/scim
+      - github.com/google/go-attestation # temporarily replaced with github.com/smallstep/go-attestation till changes are in upstream
 
   govet:
     check-shadowing: true
