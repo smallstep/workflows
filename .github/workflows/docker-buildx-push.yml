@@ -24,7 +24,7 @@ on:
       runs_on:
         required: false
         type: string
-        deafult: 'ubuntu-latest'
+        default: 'ubuntu-latest'
 
 jobs:
   build_upload_docker:
