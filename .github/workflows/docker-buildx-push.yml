@@ -21,11 +21,15 @@ on:
         required: false
         type: string
         default: Dockerfile
+      runs_on:
+        required: false
+        type: string
+        deafult: 'ubuntu-latest'
 
 jobs:
   build_upload_docker:
     name: Build & Upload Docker Images
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs_on }}
     permissions:
       id-token: write
       contents: write
