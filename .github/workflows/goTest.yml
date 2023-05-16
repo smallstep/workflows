@@ -11,6 +11,10 @@ on:
         required: false
         type: boolean
         default: false
+      goprivate:
+        required: false
+        type: string
+        default: go.step.sm
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -43,7 +47,7 @@ jobs:
     needs: set-go-matrix
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: go.step.sm
+      GOPRIVATE: ${{ inputs.goprivate }}
     strategy:
       matrix: ${{ fromJson(needs.set-go-matrix.outputs.matrix) }}
     steps:
