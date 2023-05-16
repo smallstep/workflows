@@ -4,6 +4,10 @@ on:
       os-dependencies:
         required: false
         type: string
+      goprivate:
+        required: false
+        type: string
+        default: go.step.sm
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -14,7 +18,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: go.step.sm
+      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}

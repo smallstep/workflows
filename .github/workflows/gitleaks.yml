@@ -1,5 +1,10 @@
 on:
   workflow_call:
+    inputs:
+      goprivate:
+        required: false
+        type: string
+        default: go.step.sm
     secrets:
       GITLEAKS_LICENSE_KEY:
         required: true
@@ -15,7 +20,7 @@ jobs:
       contents: read
       security-events: write
     env:
-      GOPRIVATE: go.step.sm
+      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
