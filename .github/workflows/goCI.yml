@@ -31,6 +31,10 @@ on:
       only-latest-golang:
         required: false
         type: boolean
+      goprivate:
+        required: false
+        type: string
+        default: go.step.sm
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -47,6 +51,7 @@ jobs:
     if: inputs.run-lint
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
+      goprivate: ${{ inputs.goprivate }}
     secrets: inherit
 
   govulncheck:
@@ -54,6 +59,7 @@ jobs:
     if: inputs.run-lint
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
+      goprivate: ${{ inputs.goprivate }}
     secrets: inherit
 
   codeql:
@@ -67,6 +73,7 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
       make-test: ${{ inputs.make-test }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
+      goprivate: ${{ inputs.goprivate }}
     secrets: inherit
 
   build:
@@ -75,4 +82,5 @@ jobs:
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
+      goprivate: ${{ inputs.goprivate }}
     secrets: inherit
