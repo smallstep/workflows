@@ -35,6 +35,9 @@ on:
         required: false
         type: string
         default: go.step.sm
+      golangci-lint-args:
+        required: false
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -50,8 +53,9 @@ jobs:
     uses: smallstep/workflows/.github/workflows/goLint.yml@main
     if: inputs.run-lint
     with:
-      os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
+      golangci-lint-args: ${{ inputs.golangci-lint-args }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
 
   govulncheck:
