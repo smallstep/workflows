@@ -8,6 +8,10 @@ on:
         required: false
         type: string
         default: go.step.sm
+      golangci-lint-args:
+        required: false
+        type: string
+        default: '--timeout=30m'
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -58,5 +62,5 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.51
-          args: --timeout=30m
+          args: '${{ inputs.golangci-lint-args }}'
           skip-pkg-cache: true
