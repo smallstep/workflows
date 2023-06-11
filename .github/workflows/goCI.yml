@@ -1,41 +1,43 @@
 on:
   workflow_call:
     inputs:
-      os-dependencies:
+      build-command:
         required: false
         type: string
-      run-lint:
+      golangci-lint-args:
         required: false
-        type: boolean
-        default: true
-      run-gitleaks:
-        required: false
-        type: boolean
-        default: false
-      run-codeql:
-        required: false
-        type: boolean
-        default: false
-      run-test:
-        required: false
-        type: boolean
-        default: true
-      make-test:
-        required: false
-        type: boolean
-        default: false
-      run-build:
-        required: false
-        type: boolean
-        default: true
-      only-latest-golang:
-        required: false
-        type: boolean
+        type: string
       goprivate:
         required: false
         type: string
         default: go.step.sm
-      golangci-lint-args:
+      only-latest-golang:
+        required: false
+        type: boolean
+      os-dependencies:
+        required: false
+        type: string
+      run-build:
+        required: false
+        type: boolean
+        default: true
+      run-codeql:
+        required: false
+        type: boolean
+        default: false
+      run-govulncheck:
+        required: false
+        type: boolean
+        default: true
+      run-lint:
+        required: false
+        type: boolean
+        default: true
+      run-test:
+        required: false
+        type: boolean
+        default: true
+      test-command:
         required: false
         type: string
     secrets:
@@ -50,7 +52,7 @@ on:
 
 jobs:
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    uses: smallstep/workflows/.github/workflows/goLint.yml@max/test
     if: inputs.run-lint
     with:
       goprivate: ${{ inputs.goprivate }}
@@ -59,8 +61,8 @@ jobs:
     secrets: inherit
 
   govulncheck:
-    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
-    if: inputs.run-lint
+    uses: smallstep/workflows/.github/workflows/govulncheck.yml@max/test
+    if: inputs.run-govulncheck
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
@@ -71,20 +73,21 @@ jobs:
     uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
 
   test:
-    uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    uses: smallstep/workflows/.github/workflows/goTest.yml@max/test
     if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
-      make-test: ${{ inputs.make-test }}
+      test-command: ${{ inputs.test-command }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       goprivate: ${{ inputs.goprivate }}
     secrets: inherit
 
   build:
-    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@max/test
     if: inputs.run-build
     with:
-      os-dependencies: ${{ inputs.os-dependencies }}
-      only-latest-golang: ${{ inputs.only-latest-golang }}
+      build-command: ${{ inputs.build-command }}
       goprivate: ${{ inputs.goprivate }}
+      only-latest-golang: ${{ inputs.only-latest-golang }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit

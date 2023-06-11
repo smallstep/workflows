@@ -4,9 +4,6 @@ on:
       os-dependencies:
         required: false
         type: string
-      make-test:
-        required: false
-        type: boolean
       only-latest-golang:
         required: false
         type: boolean
@@ -15,6 +12,14 @@ on:
         required: false
         type: string
         default: go.step.sm
+      gotestsum-version:
+        required: false
+        type: string
+        default: '1.10.0'
+      test-command:
+        required: false
+        type: string
+        default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -33,12 +38,12 @@ jobs:
         id: set-matrix-latest
         if: inputs.only-latest-golang
         run: |
-          echo 'matrix={"include":[{"go":"\"1.20\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""}]}' >> ${GITHUB_ENV}
       - name: Set default go-matrix
         id: set-matrix-default
         if: inputs.only-latest-golang == false
         run: |
-          echo 'matrix={"include":[{"go":"\"1.20\""},{"go":"\"1.19\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> ${GITHUB_ENV}
       - id: set-output
         run: |
           echo "matrix=${{ env.matrix }}" >> ${GITHUB_OUTPUT}
@@ -83,16 +88,11 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Install gotestsum
         run: |
-          go install gotest.tools/gotestsum@v1.8.1
-      - name: Run Default Test Suite
-        if: inputs.make-test == false
-        run: |
-          gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+          go install gotest.tools/gotestsum@v${{ inputs.gotestsum-version }}
+      - name: Run Test Suite
+        run: ${{ inputs.test-command }}
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
-      - name: Run make test
-        if: inputs.make-test
-        run: make test
       - name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
         uses: guyarb/golang-test-annotations@v0.6.0
