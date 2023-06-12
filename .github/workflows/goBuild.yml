@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      build-command:
+        required: false
+        type: string
+        default: 'V=1 make build'
       os-dependencies:
         required: false
         type: string
@@ -28,12 +32,12 @@ jobs:
         id: set-matrix-latest
         if: inputs.only-latest-golang
         run: |
-          echo 'matrix={"include":[{"go":"\"1.20\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""}]}' >> ${GITHUB_ENV}
       - name: Set default go-matrix
         id: set-matrix-default
         if: inputs.only-latest-golang == false
         run: |
-          echo 'matrix={"include":[{"go":"\"1.20\""},{"go":"\"1.19\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> ${GITHUB_ENV}
       - id: set-output
         run: |
           echo "matrix=${{ env.matrix }}" >> ${GITHUB_OUTPUT}
@@ -77,4 +81,4 @@ jobs:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Build
-        run: V=1 make build
+        run: ${{ inputs.build-command }}

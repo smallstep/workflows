@@ -1,41 +1,43 @@
 on:
   workflow_call:
     inputs:
-      os-dependencies:
+      build-command:
         required: false
         type: string
-      run-lint:
+      golangci-lint-args:
         required: false
-        type: boolean
-        default: true
-      run-gitleaks:
-        required: false
-        type: boolean
-        default: false
-      run-codeql:
-        required: false
-        type: boolean
-        default: false
-      run-test:
-        required: false
-        type: boolean
-        default: true
-      make-test:
-        required: false
-        type: boolean
-        default: false
-      run-build:
-        required: false
-        type: boolean
-        default: true
-      only-latest-golang:
-        required: false
-        type: boolean
+        type: string
       goprivate:
         required: false
         type: string
         default: go.step.sm
-      golangci-lint-args:
+      only-latest-golang:
+        required: false
+        type: boolean
+      os-dependencies:
+        required: false
+        type: string
+      run-build:
+        required: false
+        type: boolean
+        default: true
+      run-codeql:
+        required: false
+        type: boolean
+        default: false
+      run-govulncheck:
+        required: false
+        type: boolean
+        default: true
+      run-lint:
+        required: false
+        type: boolean
+        default: true
+      run-test:
+        required: false
+        type: boolean
+        default: true
+      test-command:
         required: false
         type: string
     secrets:
@@ -60,7 +62,7 @@ jobs:
 
   govulncheck:
     uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
-    if: inputs.run-lint
+    if: inputs.run-govulncheck
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
@@ -75,7 +77,7 @@ jobs:
     if: inputs.run-test
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
-      make-test: ${{ inputs.make-test }}
+      test-command: ${{ inputs.test-command }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       goprivate: ${{ inputs.goprivate }}
     secrets: inherit
@@ -84,7 +86,8 @@ jobs:
     uses: smallstep/workflows/.github/workflows/goBuild.yml@main
     if: inputs.run-build
     with:
-      os-dependencies: ${{ inputs.os-dependencies }}
-      only-latest-golang: ${{ inputs.only-latest-golang }}
+      build-command: ${{ inputs.build-command }}
       goprivate: ${{ inputs.goprivate }}
+      only-latest-golang: ${{ inputs.only-latest-golang }}
+      os-dependencies: ${{ inputs.os-dependencies }}
     secrets: inherit
