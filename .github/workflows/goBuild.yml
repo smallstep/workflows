@@ -11,7 +11,7 @@ on:
       only-latest-golang:
         required: false
         type: boolean
-        default: false
+        default: true
       goprivate:
         required: false
         type: string
@@ -67,13 +67,13 @@ jobs:
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
       - name: Setup SSH key for private dependencies
-        uses: webfactory/ssh-agent@v0.7.0
+        uses: webfactory/ssh-agent@v0.8.0
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         if: ${{ env.SSH_PRIVATE_KEY != '' }}
