@@ -37,6 +37,10 @@ on:
         required: false
         type: boolean
         default: true
+      setup-bats:
+        required: false
+        type: boolean
+        default: false
       test-command:
         required: false
         type: string
@@ -76,10 +80,11 @@ jobs:
     uses: smallstep/workflows/.github/workflows/goTest.yml@main
     if: inputs.run-test
     with:
-      os-dependencies: ${{ inputs.os-dependencies }}
-      test-command: ${{ inputs.test-command }}
-      only-latest-golang: ${{ inputs.only-latest-golang }}
       goprivate: ${{ inputs.goprivate }}
+      only-latest-golang: ${{ inputs.only-latest-golang }}
+      os-dependencies: ${{ inputs.os-dependencies }}
+      setup-bats: ${{ inputs.setup-bats }}
+      test-command: ${{ inputs.test-command }}
     secrets: inherit
 
   build:

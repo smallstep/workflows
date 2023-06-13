@@ -1,13 +1,6 @@
 on:
   workflow_call:
     inputs:
-      os-dependencies:
-        required: false
-        type: string
-      only-latest-golang:
-        required: false
-        type: boolean
-        default: false
       goprivate:
         required: false
         type: string
@@ -16,6 +9,17 @@ on:
         required: false
         type: string
         default: '1.10.0'
+      only-latest-golang:
+        required: false
+        type: boolean
+        default: false
+      os-dependencies:
+        required: false
+        type: string
+      setup-bats:
+        required: false
+        type: boolean
+        default: false
       test-command:
         required: false
         type: string
@@ -73,7 +77,7 @@ jobs:
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -89,6 +93,11 @@ jobs:
       - name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v${{ inputs.gotestsum-version }}
+      - name: Setup BATS
+        if: inputs.setup-bats
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.9.0
       - name: Run Test Suite
         run: ${{ inputs.test-command }}
         env:
@@ -100,7 +109,7 @@ jobs:
           test-results: gotestsum.json
       - name: Codecov
         uses: codecov/codecov-action@v3
-        if: matrix.go == '1.20'
+        if: matrix.go == 'stable'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out # optional
