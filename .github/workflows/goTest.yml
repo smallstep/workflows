@@ -98,8 +98,6 @@ jobs:
         uses: mig4/setup-bats@v1
         with:
           bats-version: 1.9.0
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Run Test Suite
         run: ${{ inputs.test-command }}
         env:
