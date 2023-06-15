@@ -1,17 +1,25 @@
 on:
   workflow_call:
     inputs:
-      go-version:
-        required: false
-        type: string
-        default: 'stable'
       cosign-version:
         required: false
         type: string
         default: 'v1.13.1'
+      goprivate:
+        required: false
+        type: string
+        default: go.step.sm
+      go-version:
+        required: false
+        type: string
+        default: 'stable'
     secrets:
+      SSH_PRIVATE_KEY:
+        required: false
       GORELEASER_PAT:
         required: true
+      PAT:
+        required: false
 
 jobs:
   goreleaser:
@@ -20,6 +28,8 @@ jobs:
     permissions:
       id-token: write
       contents: write
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -28,6 +38,21 @@ jobs:
         with:
           go-version: '${{ inputs.go-version }}'
           check-latest: true
+      - name: Setup SSH key for private dependencies
+        uses: webfactory/ssh-agent@v0.8.0
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Reconfigure Git for private repos
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+        run: |
+          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
+          git config --global url.git@github.com:.insteadOf https://github.com/
       - name: Install cosign
         uses: sigstore/cosign-installer@v2
         with:
