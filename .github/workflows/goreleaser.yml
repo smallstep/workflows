@@ -13,6 +13,9 @@ on:
         required: false
         type: string
         default: 'stable'
+      os-dependencies:
+        required: false
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -31,6 +34,10 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
+      - name: Install Dependencies # Some dependencies require this package
+        if: ${{ inputs.os-dependencies != '' }}
+        run: |
+          sudo apt-get install ${{ inputs.os-dependencies }}
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Go
