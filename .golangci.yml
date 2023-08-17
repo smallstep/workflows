@@ -338,5 +338,6 @@ issues:
         - nilnil
         - noctx
         - nolintlint
+        - revive
         - wrapcheck
         - whitespace
