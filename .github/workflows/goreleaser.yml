@@ -21,6 +21,8 @@ on:
         required: false
       GORELEASER_PAT:
         required: true
+      GORELEASER_KEY:
+        required: true
       PAT:
         required: false
 
@@ -69,13 +71,15 @@ jobs:
         run: |
           RELEASE_DATE=$(date -u +"%y-%m-%d")
           echo "RELEASE_DATE=${RELEASE_DATE}" >> ${GITHUB_ENV}
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v3
+      - name: Run GoReleaser Pro
+        uses: goreleaser/goreleaser-action@v5
         with:
-          version: 'latest'
+          distribution: goreleaser-pro
+          version: latest
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           RELEASE_DATE: ${{ env.RELEASE_DATE }}
           COSIGN_EXPERIMENTAL: 1
 
