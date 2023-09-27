@@ -42,6 +42,9 @@ jobs:
           sudo apt-get install ${{ inputs.os-dependencies }}
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
