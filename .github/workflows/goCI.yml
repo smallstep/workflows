@@ -55,8 +55,6 @@ on:
         required: false
       CODECOV_TOKEN:
         required: false
-      GITLEAKS_LICENSE_KEY:
-        required: false
 
 jobs:
   lint:
