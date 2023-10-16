@@ -104,7 +104,7 @@ jobs:
           GOTESTSUM_JSONFILE: gotestsum.json
       - name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
-        uses: guyarb/golang-test-annotations@v0.6.0
+        uses: guyarb/golang-test-annotations@v0.7.0
         with:
           test-results: gotestsum.json
       - name: Codecov
