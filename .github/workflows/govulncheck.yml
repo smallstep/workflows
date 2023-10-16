@@ -7,7 +7,7 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: 'stable'
+          go-version: "stable"
           check-latest: true
           cache: true
       - name: Setup SSH key for private dependencies

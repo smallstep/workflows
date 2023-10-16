@@ -4,11 +4,11 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
       gotestsum-version:
         required: false
         type: string
-        default: '1.10.0'
+        default: "1.10.0"
       only-latest-golang:
         required: false
         type: boolean
@@ -23,7 +23,7 @@ on:
       test-command:
         required: false
         type: string
-        default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
+        default: "gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./..."
     secrets:
       SSH_PRIVATE_KEY:
         required: false

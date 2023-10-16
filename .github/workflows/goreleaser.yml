@@ -4,15 +4,15 @@ on:
       cosign-version:
         required: false
         type: string
-        default: 'v1.13.1'
+        default: "v1.13.1"
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
       go-version:
         required: false
         type: string
-        default: 'stable'
+        default: "stable"
       os-dependencies:
         required: false
         type: string
@@ -48,7 +48,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '${{ inputs.go-version }}'
+          go-version: "${{ inputs.go-version }}"
           check-latest: true
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@v0.8.0
@@ -68,7 +68,7 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v2
         with:
-          cosign-release: '${{ inputs.cosign-version }}'
+          cosign-release: "${{ inputs.cosign-version }}"
       - name: Get Release Date
         id: release_date
         run: |
@@ -85,5 +85,3 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           RELEASE_DATE: ${{ env.RELEASE_DATE }}
           COSIGN_EXPERIMENTAL: 1
-
-

@@ -4,15 +4,15 @@ on:
       build-command:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: "V=1 make build"
       golangci-lint-args:
         required: false
         type: string
-        default: '--timeout=30m'
+        default: "--timeout=30m"
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
       only-latest-golang:
         required: false
         type: boolean
@@ -47,7 +47,7 @@ on:
       test-command:
         required: false
         type: string
-        default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
+        default: "gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./..."
     secrets:
       SSH_PRIVATE_KEY:
         required: false

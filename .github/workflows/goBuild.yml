@@ -4,7 +4,7 @@ on:
       build-command:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: "V=1 make build"
       os-dependencies:
         required: false
         type: string
@@ -15,7 +15,7 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
     secrets:
       SSH_PRIVATE_KEY:
         required: false
