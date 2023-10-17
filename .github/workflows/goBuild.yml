@@ -15,7 +15,7 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm
+        default: go.step.sm,github.com/smallstep
     secrets:
       SSH_PRIVATE_KEY:
         required: false
