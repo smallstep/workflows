@@ -5,6 +5,9 @@ on:
         required: false
         type: string
         default: 'V=1 make build'
+      codeql-make-bootstrap:
+        required: false
+        type: boolean
       golangci-lint-args:
         required: false
         type: string
@@ -79,6 +82,7 @@ jobs:
     uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
     with:
       goprivate: ${{ inputs.goprivate }}
+      codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
     secrets: inherit
 
   test:

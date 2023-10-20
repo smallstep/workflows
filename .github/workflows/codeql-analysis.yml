@@ -3,6 +3,9 @@ name: "CodeQL"
 on:
   workflow_call:
     inputs:
+      codeql-make-bootstrap:
+        required: false
+        type: boolean
       goprivate:
         required: false
         type: string
@@ -62,6 +65,10 @@ jobs:
         # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
+    - name: Make bootstrap
+      if: inputs.codeql-make-bootstrap
+      run: |
+        make bootstrap
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
