@@ -42,15 +42,15 @@ jobs:
         id: set-matrix-latest
         if: inputs.only-latest-golang
         run: |
-          echo 'matrix={"include":[{"go":"\"stable\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""}]}' >> "${GITHUB_ENV}"
       - name: Set default go-matrix
         id: set-matrix-default
         if: inputs.only-latest-golang == false
         run: |
-          echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> ${GITHUB_ENV}
+          echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> "${GITHUB_ENV}"
       - id: set-output
         run: |
-          echo "matrix=${{ env.matrix }}" >> ${GITHUB_OUTPUT}
+          echo "matrix=${{ env.matrix }}" >> "${GITHUB_OUTPUT}"
 
   test:
     needs: set-go-matrix
