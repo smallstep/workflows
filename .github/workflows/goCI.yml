@@ -60,6 +60,15 @@ on:
         required: false
 
 jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check workflow files
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+
   lint:
     uses: smallstep/workflows/.github/workflows/goLint.yml@main
     if: inputs.run-lint

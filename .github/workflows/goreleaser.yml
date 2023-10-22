@@ -73,7 +73,7 @@ jobs:
         id: release_date
         run: |
           RELEASE_DATE=$(date -u +"%y-%m-%d")
-          echo "RELEASE_DATE=${RELEASE_DATE}" >> ${GITHUB_ENV}
+          echo "RELEASE_DATE=${RELEASE_DATE}" >> "${GITHUB_ENV}"
       - name: Run GoReleaser Pro
         uses: goreleaser/goreleaser-action@v5
         with:
