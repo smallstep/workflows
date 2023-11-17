@@ -23,6 +23,10 @@ on:
       os-dependencies:
         required: false
         type: string
+      run-actionlint:
+        required: false
+        type: boolean
+        default: true
       run-build:
         required: false
         type: boolean
@@ -62,6 +66,7 @@ on:
 jobs:
   actionlint:
     runs-on: ubuntu-latest
+    if: inputs.run-actionlint
     steps:
       - uses: actions/checkout@v4
       - name: Check workflow files
