@@ -53,6 +53,13 @@ jobs:
       run: |
         git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
         git config --global url.git@github.com:.insteadOf https://github.com/
+
+    # Install Go using version from go.mod; also see https://github.com/github/codeql-action/issues/1842#issuecomment-1704398087
+    - name: Install Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: go.mod
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
