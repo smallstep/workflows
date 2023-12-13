@@ -34,7 +34,7 @@ jobs:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
           check-latest: true
