@@ -16,6 +16,10 @@ on:
       os-dependencies:
         required: false
         type: string
+      run-codecov:
+        required: false
+        type: boolean
+        default: true
       setup-bats:
         required: false
         type: boolean
@@ -38,17 +42,20 @@ jobs:
     outputs:
       matrix: ${{ steps.set-output.outputs.matrix }}
     steps:
-      - name: Set go-matrix latest version
+      -
+        name: Set go-matrix latest version
         id: set-matrix-latest
         if: inputs.only-latest-golang
         run: |
           echo 'matrix={"include":[{"go":"\"stable\""}]}' >> "${GITHUB_ENV}"
-      - name: Set default go-matrix
+      -
+        name: Set default go-matrix
         id: set-matrix-default
         if: inputs.only-latest-golang == false
         run: |
           echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> "${GITHUB_ENV}"
-      - id: set-output
+      -
+        id: set-output
         run: |
           echo "matrix=${{ env.matrix }}" >> "${GITHUB_OUTPUT}"
 
@@ -60,29 +67,34 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.set-go-matrix.outputs.matrix) }}
     steps:
-      - name: Install Dependencies
+      -
+        name: Install Dependencies
         if: inputs.os-dependencies != ''
         run: |
           sudo apt-get install ${{ inputs.os-dependencies }}
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Reconfigure for Git go.step.sm
+      -
+        name: Reconfigure for Git go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: env.PAT != ''
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
-      - name: Install Go
+      -
+        name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-      - name: Setup SSH key for private dependencies
+      -
+        name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@v0.8.0
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -90,26 +102,31 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Install gotestsum
+      -
+        name: Install gotestsum
         run: |
           go install gotest.tools/gotestsum@v${{ inputs.gotestsum-version }}
-      - name: Setup BATS
+      -
+        name: Setup BATS
         if: inputs.setup-bats
         uses: mig4/setup-bats@v1
         with:
           bats-version: 1.9.0
-      - name: Run Test Suite
+      -
+        name: Run Test Suite
         run: ${{ inputs.test-command }}
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
-      - name: Annotate Test Suite Results
+      -
+        name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
         uses: guyarb/golang-test-annotations@v0.7.0
         with:
           test-results: gotestsum.json
-      - name: Codecov
+      -
+        name: Codecov
         uses: codecov/codecov-action@v3
-        if: matrix.go == 'stable'
+        if: inputs.run-codecov && matrix.go == 'stable'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out # optional
