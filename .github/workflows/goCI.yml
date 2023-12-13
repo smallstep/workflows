@@ -31,6 +31,10 @@ on:
         required: false
         type: boolean
         default: true
+      run-codecov:
+        required: false
+        type: boolean
+        default: true
       run-codeql:
         required: false
         type: boolean
@@ -106,6 +110,7 @@ jobs:
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       os-dependencies: ${{ inputs.os-dependencies }}
+      run-codecov: ${{ inputs.run-codecov }}
       setup-bats: ${{ inputs.setup-bats }}
       test-command: ${{ inputs.test-command }}
     secrets: inherit
