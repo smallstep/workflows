@@ -125,7 +125,7 @@ jobs:
           test-results: gotestsum.json
       -
         name: Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: inputs.run-codecov && matrix.go == 'stable'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
