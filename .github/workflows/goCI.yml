@@ -60,8 +60,6 @@ on:
         type: string
         default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
     secrets:
-      SSH_PRIVATE_KEY:
-        required: false
       PAT:
         required: false
       CODECOV_TOKEN:
@@ -72,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.run-actionlint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Check workflow files
         uses: docker://rhysd/actionlint:latest
         with:

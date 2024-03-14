@@ -13,8 +13,6 @@ on:
         type: string
         default: '--timeout=30m'
     secrets:
-      SSH_PRIVATE_KEY:
-        required: false
       PAT:
         required: false
 
@@ -28,39 +26,40 @@ jobs:
         if: ${{ inputs.os-dependencies != '' }}
         run: |
           sudo apt-get install ${{ inputs.os-dependencies }}
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout w/ PAT
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
         with:
           submodules: true
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-          check-latest: true
-          cache: true
-      - name: Setup SSH key for private dependencies
-        uses: webfactory/ssh-agent@v0.9.0
+          token: ${{ secrets.PAT }}
+      - name: Checkout w/out PAT
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT == '' }}
         with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Configure Linter
-        if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
-        run: |
-          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
-      - name: Reconfigure Git for private repos
+          submodules: true
+      - name: Reconfigure Git for go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
         run: |
-          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
-          git config --global url.git@github.com:.insteadOf https://github.com/
-      - name: Run Linter
-        uses: golangci/golangci-lint-action@v4
+          git config --global --add url."https://${{ secrets.PAT }}@github.com/smallstep/".insteadOf https://github.com/smallstep/
+          git config --global --add url."https://${{ secrets.PAT }}@github.com/smallstep/".insteadOf git+ssh://git@github.com/smallstep/
+      - name: Install Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          version: v1.55.2
+          check-latest: true
+          cache: true
+      - name: Configure Linter
+        if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
+        run: |
+          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v4.0.0
+        with:
+          version: v1.56.2
           args: '${{ inputs.golangci-lint-args }}'
           skip-pkg-cache: true
