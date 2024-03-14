@@ -29,8 +29,6 @@ on:
         type: string
         default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
     secrets:
-      SSH_PRIVATE_KEY:
-        required: false
       PAT:
         required: false
       CODECOV_TOKEN:
@@ -73,35 +71,37 @@ jobs:
         run: |
           sudo apt-get install ${{ inputs.os-dependencies }}
       -
-        name: Checkout
-        uses: actions/checkout@v4
+        name: Checkout w/ PAT
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
         with:
           submodules: true
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          token: ${{ secrets.PAT }}
+      -
+        name: Checkout w/out PAT
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT == '' }}
+        with:
+          submodules: true
       -
         name: Reconfigure for Git go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: env.PAT != ''
         run: |
-          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
-          git config --global url.git@github.com:.insteadOf https://github.com/
+          git config --global --add url."https://${{ secrets.PAT }}@github.com/smallstep/".insteadOf https://github.com/smallstep/
+          git config --global --add url."https://${{ secrets.PAT }}@github.com/smallstep/".insteadOf git+ssh://git@github.com/smallstep/
       -
-        name: Install Go
-        uses: actions/setup-go@v5
+        name: Setup Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-      -
-        name: Setup SSH key for private dependencies
-        uses: webfactory/ssh-agent@v0.9.0
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        if: env.SSH_PRIVATE_KEY != ''
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Install gotestsum
         run: |
@@ -109,7 +109,7 @@ jobs:
       -
         name: Setup BATS
         if: inputs.setup-bats
-        uses: mig4/setup-bats@v1
+        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1.2.0
         with:
           bats-version: 1.9.0
       -
@@ -121,12 +121,12 @@ jobs:
       -
         name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
-        uses: guyarb/golang-test-annotations@v0.8.0
+        uses: guyarb/golang-test-annotations@2941118d7ef622b1b3771d1ff6eae9e90659eb26 # v0.8.0
         with:
           test-results: gotestsum.json
       -
         name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@54bcd8715eee62d40e33596ef5e8f0f48dbbccab # v4.1.0
         if: inputs.run-codecov && matrix.go == 'stable'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
