@@ -54,7 +54,7 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
         with:
-          cosign-release: 'v1.13.1'
+          cosign-release: 'v2.2.3'
       - name: Build and push
         id: build-and-push
         uses: docker/build-push-action@v5
