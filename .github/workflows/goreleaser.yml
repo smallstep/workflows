@@ -4,7 +4,7 @@ on:
       cosign-version:
         required: false
         type: string
-        default: 'v1.13.1'
+        default: 'v2.2.3'
       goprivate:
         required: false
         type: string
