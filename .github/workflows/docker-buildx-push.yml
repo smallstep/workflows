@@ -69,5 +69,3 @@ jobs:
         id: cosign
         run: |
           cosign sign -r ${{ inputs.docker_image }}@${{ steps.build-and-push.outputs.digest }} --yes
-        env:
-          COSIGN_EXPERIMENTAL: 1
