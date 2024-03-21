@@ -84,6 +84,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           RELEASE_DATE: ${{ env.RELEASE_DATE }}
-          COSIGN_EXPERIMENTAL: 1
 
 
