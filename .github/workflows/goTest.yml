@@ -74,7 +74,7 @@ jobs:
           sudo apt-get install ${{ inputs.os-dependencies }}
       -
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -88,14 +88,14 @@ jobs:
           git config --global url.git@github.com:.insteadOf https://github.com/
       -
         name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
       -
         name: Setup SSH key for private dependencies
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         if: env.SSH_PRIVATE_KEY != ''
@@ -109,7 +109,7 @@ jobs:
       -
         name: Setup BATS
         if: inputs.setup-bats
-        uses: mig4/setup-bats@v1
+        uses: mig4/setup-bats@af9a00deb21b5d795cabfeaa8d9060410377686d # v1.2.0
         with:
           bats-version: 1.9.0
       -
@@ -121,12 +121,12 @@ jobs:
       -
         name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
-        uses: guyarb/golang-test-annotations@v0.8.0
+        uses: guyarb/golang-test-annotations@2941118d7ef622b1b3771d1ff6eae9e90659eb26 # v0.8.0
         with:
           test-results: gotestsum.json
       -
         name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
         if: inputs.run-codecov && matrix.go == 'stable'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
