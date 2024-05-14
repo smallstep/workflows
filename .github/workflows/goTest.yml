@@ -71,6 +71,7 @@ jobs:
         name: Install Dependencies
         if: inputs.os-dependencies != ''
         run: |
+          sudo apt-get update
           sudo apt-get install ${{ inputs.os-dependencies }}
       -
         name: Checkout
