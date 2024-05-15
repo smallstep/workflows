@@ -129,7 +129,6 @@ linters-settings:
       - github.com/google/go-attestation # temporarily replaced with github.com/smallstep/go-attestation till changes are in upstream
 
   govet:
-    check-shadowing: true
     # Enable all analyzers.
     # Default: false
     enable-all: true
