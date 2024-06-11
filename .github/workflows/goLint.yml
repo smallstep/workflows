@@ -64,4 +64,4 @@ jobs:
         with:
           version: v1.55.2
           args: '${{ inputs.golangci-lint-args }}'
-          skip-pkg-cache: true
+          skip-cache: true
