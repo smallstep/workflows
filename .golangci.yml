@@ -15,13 +15,6 @@ linters-settings:
     # Default: 0.0
     package-average: 10.0
 
-  depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
-
   dupl:
     threshold: 100
 
@@ -30,8 +23,6 @@ linters-settings:
     # Such cases aren't reported by default.
     # Default: false
     check-type-assertions: true
-
-  errorlint:
 
   funlen:
     # Checks the number of lines in a function.
@@ -82,26 +73,6 @@ linters-settings:
   gocyclo:
     min-complexity: 10
 
-  gomnd:
-    # List of function patterns to exclude from analysis.
-    # Values always ignored: `time.Date`
-    # Default: []
-    ignored-functions:
-      - os.Chmod
-      - os.Mkdir
-      - os.MkdirAll
-      - os.OpenFile
-      - os.WriteFile
-      - prometheus.ExponentialBuckets
-      - prometheus.ExponentialBucketsRange
-      - prometheus.LinearBuckets
-      - strconv.FormatFloat
-      - strconv.FormatInt
-      - strconv.FormatUint
-      - strconv.ParseFloat
-      - strconv.ParseInt
-      - strconv.ParseUint
-
   gomodguard:
     blocked:
       # List of blocked modules.
@@ -149,9 +120,6 @@ linters-settings:
   lll:
     line-length: 140
 
-  maligned:
-    suggest-new: true
-
   misspell:
     locale: US
 
@@ -172,7 +140,7 @@ linters-settings:
     require-specific: true
 
   revive:
-    min-confidence: 0
+    confidence: 0
 
   rowserrcheck:
     # database/sql is always checked
@@ -185,11 +153,6 @@ linters-settings:
     # Otherwise, only methods that take `*testing.T`, `*testing.B`, and `testing.TB` as arguments are checked.
     # Default: false
     all: true
-
-  varcheck:
-    # Check usage of exported fields and variables.
-    # Default: false
-    exported-fields: false # default false # TODO: enable after fixing false positives
 
 linters:
   disable-all: true
