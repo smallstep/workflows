@@ -81,5 +81,7 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Build
         run: ${{ inputs.build-command }}

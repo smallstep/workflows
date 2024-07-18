@@ -116,7 +116,7 @@ jobs:
     secrets: inherit
 
   build:
-    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    uses: smallstep/workflows/.github/workflows/goBuild.yml@max/build-debug
     if: inputs.run-build
     with:
       build-command: ${{ inputs.build-command }}
