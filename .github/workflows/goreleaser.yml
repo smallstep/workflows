@@ -37,16 +37,25 @@ on:
         required: false
       AWS_SECRET_ACCESS_KEY:
         required: false
+      GPG_PRIVATE_KEY:
+        required: false
 
 jobs:
   goreleaser:
+<<<<<<< HEAD
     name: Upload Assets To Github w/ goreleaser
     runs-on: ${{ inputs.runs-on }}
+=======
+    name: Upload Assets To Github and Google Artifact Registry w/ goreleaser
+    runs-on: ubuntu-latest
+>>>>>>> 660f1cc (Add support in for signing and publishing RPM and Deb packages to GCP Artifact Registry.)
     permissions:
       id-token: write
       contents: write
+      packages: write
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
+      GPG_PRIVATE_KEY_FILE: "0x889B19391F774443-Certify.key"
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
@@ -87,6 +96,23 @@ jobs:
         run: |
           RELEASE_DATE=$(date -u +"%y-%m-%d")
           echo "RELEASE_DATE=${RELEASE_DATE}" >> "${GITHUB_ENV}"
+      - name: Authenticate to Google Cloud
+        id: gcloud-auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: prod-us-central1-e5bd
+      - name: Write GPG private key to file
+        run: |
+          echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
+        shell: bash
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       - name: Run GoReleaser Pro
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
