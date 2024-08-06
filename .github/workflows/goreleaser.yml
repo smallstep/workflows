@@ -16,6 +16,10 @@ on:
       os-dependencies:
         required: false
         type: string
+      runs-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -37,7 +41,7 @@ on:
 jobs:
   goreleaser:
     name: Upload Assets To Github w/ goreleaser
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     permissions:
       id-token: write
       contents: write
