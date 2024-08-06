@@ -16,7 +16,7 @@ on:
       os-dependencies:
         required: false
         type: string
-      runs_on:
+      runs-on:
         required: false
         type: string
         default: 'ubuntu-latest'
@@ -41,7 +41,7 @@ on:
 jobs:
   goreleaser:
     name: Upload Assets To Github w/ goreleaser
-    runs-on: ${{ inputs.runs_on }}
+    runs-on: ${{ inputs.runs-on }}
     permissions:
       id-token: write
       contents: write
