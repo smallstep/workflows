@@ -39,6 +39,12 @@ on:
         required: false
       GPG_PRIVATE_KEY:
         required: false
+      GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
+      GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT:
+        required: false
+      GOOGLE_CLOUD_PACKAGES_PROJECT_ID:
+        required: false
 
 jobs:
   goreleaser:
