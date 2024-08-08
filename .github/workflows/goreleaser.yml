@@ -5,6 +5,10 @@ on:
         required: false
         type: string
         default: 'v2.2.3'
+      enable-packages-upload:
+        required: false
+        type: boolean
+        default: false
       goprivate:
         required: false
         type: string
@@ -103,6 +107,7 @@ jobs:
           RELEASE_DATE=$(date -u +"%y-%m-%d")
           echo "RELEASE_DATE=${RELEASE_DATE}" >> "${GITHUB_ENV}"
       - name: Authenticate to Google Cloud
+        if: inputs.enable-packages-upload
         id: gcloud-auth
         uses: google-github-actions/auth@v2
         with:
@@ -110,10 +115,12 @@ jobs:
           workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT }}
       - name: Set up Google Cloud SDK
+        if: inputs.enable-packages-upload
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
       - name: Write GPG private key to file
+        if: inputs.enable-packages-upload
         run: |
           echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
         shell: bash
