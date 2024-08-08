@@ -43,6 +43,8 @@ on:
         required: false
       GPG_PRIVATE_KEY:
         required: false
+      GPG_PRIVATE_KEY_PASSWORD:
+        required: false
       GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER:
         required: false
       GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT:
@@ -50,15 +52,11 @@ on:
       GOOGLE_CLOUD_PACKAGES_PROJECT_ID:
         required: false
 
+
 jobs:
   goreleaser:
-<<<<<<< HEAD
     name: Upload Assets To Github w/ goreleaser
     runs-on: ${{ inputs.runs-on }}
-=======
-    name: Upload Assets To Github and Google Artifact Registry w/ goreleaser
-    runs-on: ubuntu-latest
->>>>>>> 660f1cc (Add support in for signing and publishing RPM and Deb packages to GCP Artifact Registry.)
     permissions:
       id-token: write
       contents: write
@@ -126,6 +124,7 @@ jobs:
         shell: bash
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
       - name: Run GoReleaser Pro
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
