@@ -106,7 +106,7 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: prod-us-central1-e5bd
+          project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
       - name: Write GPG private key to file
         run: |
           echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
