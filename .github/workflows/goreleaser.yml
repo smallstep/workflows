@@ -132,11 +132,11 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
-          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          NFPM_PASSPHRASE: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
           RELEASE_DATE: ${{ env.RELEASE_DATE }}
-
