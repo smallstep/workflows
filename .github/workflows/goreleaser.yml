@@ -18,6 +18,7 @@ on:
         type: string
         default: 'stable'
       is-prerelease:
+        required: false
         type: boolean
         default: true
       os-dependencies:
