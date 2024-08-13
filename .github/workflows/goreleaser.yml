@@ -5,6 +5,10 @@ on:
         required: false
         type: string
         default: 'v2.2.3'
+      enable-packages-upload:
+        required: false
+        type: boolean
+        default: false
       goprivate:
         required: false
         type: string
@@ -37,6 +41,17 @@ on:
         required: false
       AWS_SECRET_ACCESS_KEY:
         required: false
+      GPG_PRIVATE_KEY:
+        required: false
+      GPG_PRIVATE_KEY_PASSWORD:
+        required: false
+      GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER:
+        required: false
+      GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT:
+        required: false
+      GOOGLE_CLOUD_PACKAGES_PROJECT_ID:
+        required: false
+
 
 jobs:
   goreleaser:
@@ -45,8 +60,10 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      packages: write
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
+      GPG_PRIVATE_KEY_FILE: "0x889B19391F774443-Certify.key"
     steps:
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
@@ -87,6 +104,27 @@ jobs:
         run: |
           RELEASE_DATE=$(date -u +"%y-%m-%d")
           echo "RELEASE_DATE=${RELEASE_DATE}" >> "${GITHUB_ENV}"
+      - name: Authenticate to Google Cloud
+        if: inputs.enable-packages-upload
+        id: gcloud-auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud SDK
+        if: inputs.enable-packages-upload
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
+      - name: Write GPG private key to file
+        if: inputs.enable-packages-upload
+        run: |
+          echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
+        shell: bash
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
       - name: Run GoReleaser Pro
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
@@ -94,11 +132,11 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
-          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_PAT }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          NFPM_PASSPHRASE: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
           RELEASE_DATE: ${{ env.RELEASE_DATE }}
-
