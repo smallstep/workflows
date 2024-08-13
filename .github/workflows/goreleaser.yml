@@ -70,7 +70,7 @@ jobs:
       GPG_PRIVATE_KEY_FILE: "0x889B19391F774443-Certify.key"
     steps:
       - name: Set IS_PRERELEASE
-        run: echo "IS_PRERELEASE=${{ inputs.is-prerelease }}" >> $GITHUB_ENV
+        run: echo "IS_PRERELEASE=${{ inputs.is-prerelease }}" >> "$GITHUB_ENV"
       - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
         run: |
