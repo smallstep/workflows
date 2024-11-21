@@ -65,3 +65,6 @@ jobs:
           version: v1.60.1
           args: '${{ inputs.golangci-lint-args }}'
           skip-cache: true
+      - name: Run go generate
+        if: success() || failure() # run this step even if the previous one failed
+        run: .github/workflows/go-generate.sh
