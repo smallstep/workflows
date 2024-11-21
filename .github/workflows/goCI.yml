@@ -79,7 +79,7 @@ jobs:
           args: -color
 
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    uses: smallstep/workflows/.github/workflows/goLint.yml@go-generate-test
     if: inputs.run-lint
     with:
       goprivate: ${{ inputs.goprivate }}
