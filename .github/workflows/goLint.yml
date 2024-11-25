@@ -65,3 +65,15 @@ jobs:
           version: v1.60.1
           args: '${{ inputs.golangci-lint-args }}'
           skip-cache: true
+      - name: Run go generate
+        if: success() || failure() # run this step even if the previous one failed
+        run: |
+          # delete all go-generated files (that adhere to the comment convention)
+          git ls-files -z | grep --include \*.go -lrIZ "^// Code generated .* DO NOT EDIT\.$" | tr '\0' '\n' | xargs rm -f
+          # now generate everything
+          go generate ./...
+          # check if any files were changed
+          git diff --exit-code || (
+              echo "Generated files are not up to date. Please run 'go generate ./...' and commit the changes."
+              exit 1
+          )
