@@ -12,6 +12,10 @@ on:
         required: false
         type: string
         default: '--timeout=30m'
+      skip-go-generate:
+        required: false
+        type: boolean
+        default: false
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -66,7 +70,7 @@ jobs:
           args: '${{ inputs.golangci-lint-args }}'
           skip-cache: true
       - name: Run go generate
-        if: success() || failure() # run this step even if the previous one failed
+        if: ( success() || failure() ) && !inputs.skip-go-generate
         run: |
           # delete all go-generated files (that adhere to the comment convention); protobuf code is excluded, because its output is (currently) not fully controlled by tools.go
           git ls-files -z | grep --include \*.go --exclude \*.pb.go -lrIZ "^// Code generated .* DO NOT EDIT\.$" | tr '\0' '\n' | xargs rm -f
