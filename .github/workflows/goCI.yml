@@ -59,6 +59,10 @@ on:
         required: false
         type: string
         default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
+      lint-skip-go-generate:
+        required: false
+        type: boolean
+        default: false
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -85,6 +89,7 @@ jobs:
       goprivate: ${{ inputs.goprivate }}
       golangci-lint-args: ${{ inputs.golangci-lint-args }}
       os-dependencies: ${{ inputs.os-dependencies }}
+      skip-go-generate: ${{ inputs.lint-skip-go-generate }}
     secrets: inherit
 
   govulncheck:
