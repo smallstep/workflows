@@ -28,7 +28,7 @@ jobs:
           cache: true
       - name: Install golangci-lint
         run: |
-          curl -sSfL "https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh" | sh -s -- -b "$(go env GOPATH)/bin" v1.59.1
+          curl -sSfL "https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh" | sh -s -- -b "$(go env GOPATH)/bin" v1.61.0
       - name: Lint golangci-lint.yml config
         run: |
           "$(go env GOPATH)/bin/golangci-lint" config verify
