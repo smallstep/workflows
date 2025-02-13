@@ -176,7 +176,7 @@ linters:
     - durationcheck # check for two durations multiplied together
     - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
-    - exportloopref # checks for pointers to enclosing loop variables
+    - copyloopvar # detects places where loop variables are copied.
     - decorder # check declaration order and count of types, constants, variables and functions
     - gocritic # Provides diagnostics that check for bugs, performance and style issues.
     - goheader # Checks if file header matches to pattern
@@ -196,7 +196,7 @@ linters:
     - rowserrcheck # checks whether Err of rows is checked successfully
     - sqlclosecheck # Checks that sql.Rows and sql.Stmt are closed.
     - stylecheck # Stylecheck is a replacement for golint
-    - tenv # tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17
+    - usetesting # reports uses of functions with replacement inside the testing package.
     - tparallel # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes
     - unconvert # Remove unnecessary type conversions
     - wastedassign # wastedassign finds wasted assignment statements.
