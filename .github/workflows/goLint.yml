@@ -11,7 +11,7 @@ on:
       golangci-lint-version:
         required: false
         type: string
-        default: v1.60.1
+        default: v1.64.4
       golangci-lint-args:
         required: false
         type: string
@@ -58,7 +58,7 @@ jobs:
       - name: Configure Linter
         if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
         run: |
-          curl -O https://raw.githubusercontent.com/smallstep/workflows/master/.golangci.yml
+          curl -O https://raw.githubusercontent.com/smallstep/workflows/main/.golangci.yml
       - name: Reconfigure Git for private repos
         env:
           PAT: ${{ secrets.PAT }}
