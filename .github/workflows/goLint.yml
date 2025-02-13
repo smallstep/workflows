@@ -8,6 +8,10 @@ on:
         required: false
         type: string
         default: go.step.sm,github.com/smallstep
+      golangci-lint-version:
+        required: false
+        type: string
+        default: v1.60.1
       golangci-lint-args:
         required: false
         type: string
@@ -41,9 +45,8 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
-          go-version: 'stable'
+          go-version-file: go.mod
           check-latest: true
-          cache: true
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         env:
@@ -66,9 +69,8 @@ jobs:
       - name: Run Linter
         uses: golangci/golangci-lint-action@2e788936b09dd82dc280e845628a40d2ba6b204c # v6.3.1
         with:
-          version: v1.60.1
+          version: ${{ inputs.golangci-lint-version }}
           args: '${{ inputs.golangci-lint-args }}'
-          skip-cache: true
       - name: Run go generate
         if: ( success() || failure() ) && !inputs.skip-go-generate
         run: |
