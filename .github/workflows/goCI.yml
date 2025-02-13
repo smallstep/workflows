@@ -8,6 +8,10 @@ on:
       codeql-make-bootstrap:
         required: false
         type: boolean
+      golangci-lint-version:
+        required: false
+        type: string
+        default: v1.60.1
       golangci-lint-args:
         required: false
         type: string
@@ -87,6 +91,7 @@ jobs:
     if: inputs.run-lint
     with:
       goprivate: ${{ inputs.goprivate }}
+      golangci-lint-version: ${{ inputs.golangci-lint-version }}
       golangci-lint-args: ${{ inputs.golangci-lint-args }}
       os-dependencies: ${{ inputs.os-dependencies }}
       skip-go-generate: ${{ inputs.lint-skip-go-generate }}
