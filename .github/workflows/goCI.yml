@@ -11,11 +11,11 @@ on:
       golangci-lint-version:
         required: false
         type: string
-        default: '--timeout=30m'
+        default: v1.60.1
       golangci-lint-args:
         required: false
         type: string
-        default: v1.60.1
+        default: '--timeout=30m'
       goprivate:
         required: false
         type: string
