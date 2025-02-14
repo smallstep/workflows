@@ -11,7 +11,7 @@ on:
       golangci-lint-version:
         required: false
         type: string
-        default: v1.64.4
+        default: latest
       golangci-lint-args:
         required: false
         type: string
