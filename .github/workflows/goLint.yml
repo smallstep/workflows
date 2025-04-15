@@ -20,6 +20,10 @@ on:
         required: false
         type: boolean
         default: false
+      skip-go-mod-tidy:
+        required: false
+        type: boolean
+        default: true
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -67,6 +71,7 @@ jobs:
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
       - name: Check that go.mod is tidied
+        if: inputs.skip-go-mod-tidy == false
         run: |
           cp go.mod go.mod.orig
           cp go.sum go.sum.orig
