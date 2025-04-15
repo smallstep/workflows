@@ -91,7 +91,7 @@ jobs:
           args: -color
 
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    uses: smallstep/workflows/.github/workflows/goLint.yml@lint-go-mod-tidy-test
     if: inputs.run-lint
     with:
       goprivate: ${{ inputs.goprivate }}
