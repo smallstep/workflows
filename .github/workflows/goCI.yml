@@ -67,6 +67,10 @@ on:
         required: false
         type: boolean
         default: false
+      lint-skip-go-mod-tidy:
+        required: false
+        type: boolean
+        default: true
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -95,6 +99,7 @@ jobs:
       golangci-lint-args: ${{ inputs.golangci-lint-args }}
       os-dependencies: ${{ inputs.os-dependencies }}
       skip-go-generate: ${{ inputs.lint-skip-go-generate }}
+      skip-go-mod-tidy: ${{ inputs.lint-skip-go-mod-tidy }}
     secrets: inherit
 
   govulncheck:

@@ -20,6 +20,10 @@ on:
         required: false
         type: boolean
         default: false
+      skip-go-mod-tidy:
+        required: false
+        type: boolean
+        default: true
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -66,8 +70,17 @@ jobs:
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
+      - name: Check that go.mod is tidied
+        if: inputs.skip-go-mod-tidy == false
+        run: |
+          cp go.mod go.mod.orig
+          cp go.sum go.sum.orig
+          go mod tidy
+          diff go.mod go.mod.orig
+          diff go.sum go.sum.orig
       - name: Run Linter
         uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
+        if: success() || failure() # run this step even if the previous one failed
         with:
           version: ${{ inputs.golangci-lint-version }}
           args: '${{ inputs.golangci-lint-args }}'
