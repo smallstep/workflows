@@ -79,7 +79,7 @@ jobs:
           diff go.mod go.mod.orig
           diff go.sum go.sum.orig
       - name: Run Linter
-        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
+        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
         if: success() || failure() # run this step even if the previous one failed
         with:
           version: ${{ inputs.golangci-lint-version }}
