@@ -171,6 +171,13 @@ linters:
       # Default: []
       packages:
         - github.com/jmoiron/sqlx
+    staticcheck:
+      checks:
+        # Enable all rules by default
+        - all
+        # Omit embedded fields from selector expression.
+        # https://staticcheck.dev/docs/checks/#QF1008
+        - -QF1008
   exclusions:
     generated: lax
     presets:
