@@ -178,6 +178,9 @@ linters:
         # Omit embedded fields from selector expression.
         # https://staticcheck.dev/docs/checks/#QF1008
         - -QF1008
+    usetesting:
+      context-background: false
+      context-todo: false
   exclusions:
     generated: lax
     presets:
