@@ -166,6 +166,12 @@ linters:
         - lll
     revive:
       confidence: 0
+      rules:
+        - name: var-naming
+          arguments:
+            - [] # AllowList
+            - [] # DenyList
+            - - skipPackgeNameChecks: true # Extra parameter (upperCaseConst|skipPackageNameChecks)
     rowserrcheck:
       # database/sql is always checked
       # Default: []
