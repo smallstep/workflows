@@ -91,7 +91,7 @@ jobs:
           args: -color
 
   lint:
-    uses: smallstep/workflows/.github/workflows/goLint.yml@main
+    uses: ./.github/workflows/goLint.yml
     if: inputs.run-lint
     with:
       goprivate: ${{ inputs.goprivate }}
@@ -103,7 +103,7 @@ jobs:
     secrets: inherit
 
   govulncheck:
-    uses: smallstep/workflows/.github/workflows/govulncheck.yml@main
+    uses: ./.github/workflows/govulncheck.yml
     if: inputs.run-govulncheck
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
@@ -112,14 +112,14 @@ jobs:
 
   codeql:
     if: inputs.run-codeql
-    uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
+    uses: ./.github/workflows/codeql-analysis.yml
     with:
       goprivate: ${{ inputs.goprivate }}
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
     secrets: inherit
 
   test:
-    uses: smallstep/workflows/.github/workflows/goTest.yml@main
+    uses: ./.github/workflows/goTest.yml
     if: inputs.run-test
     with:
       goprivate: ${{ inputs.goprivate }}
@@ -131,7 +131,7 @@ jobs:
     secrets: inherit
 
   build:
-    uses: smallstep/workflows/.github/workflows/goBuild.yml@main
+    uses: ./.github/workflows/goBuild.yml
     if: inputs.run-build
     with:
       build-command: ${{ inputs.build-command }}
