@@ -120,7 +120,7 @@ jobs:
           service_account: ${{ secrets.GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT }}
       - name: Set up Google Cloud SDK
         if: inputs.enable-packages-upload
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
       - name: Write GPG private key to file
