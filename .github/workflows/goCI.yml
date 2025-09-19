@@ -104,7 +104,7 @@ jobs:
 
   govulncheck:
     uses: ./.github/workflows/govulncheck.yml
-    if: true
+    if: inputs.run-govulncheck
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
