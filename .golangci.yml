@@ -108,6 +108,7 @@ linters:
         - go.step.sm/rpc
         - github.com/elimity-com/scim
         - github.com/google/go-attestation # temporarily replaced with github.com/smallstep/go-attestation till changes are in upstream
+        - github.com/smallstep/certificates # temporarily replace with github.com/smallstep/internal-certificates
       replace-local: true
     gomodguard:
       blocked:
