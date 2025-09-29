@@ -69,24 +69,40 @@ jobs:
       GOPRIVATE: ${{ inputs.goprivate }}
       GPG_PRIVATE_KEY_FILE: "0x889B19391F774443-Certify.key"
     steps:
-      - name: Set IS_PRERELEASE
+      -
+        name: Set IS_PRERELEASE
         run: echo "IS_PRERELEASE=${{ inputs.is-prerelease }}" >> "$GITHUB_ENV"
-      - name: Install Dependencies # Some dependencies require this package
+      -
+        name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
         run: |
           sudo apt-get update
           sudo apt-get install ${{ inputs.os-dependencies }}
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
-      - run: git fetch --force --tags
-      - name: Set up Go
+      -
+        run: git fetch --force --tags
+      -
+        name: Set up Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: '${{ inputs.go-version }}'
           check-latest: true
-      - name: Setup SSH key for private dependencies
+      -
+        name: Cache Go Modules
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      -
+        name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -94,23 +110,27 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Reconfigure Git for private repos
+      -
+        name: Reconfigure Git for private repos
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
-      - name: Install cosign
+      -
+        name: Install cosign
         uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
         with:
           cosign-release: '${{ inputs.cosign-version }}'
-      - name: Get Release Date
+      -
+        name: Get Release Date
         id: release_date
         run: |
           RELEASE_DATE=$(date -u +"%y-%m-%d")
           echo "RELEASE_DATE=${RELEASE_DATE}" >> "${GITHUB_ENV}"
-      - name: Authenticate to Google Cloud
+      -
+        name: Authenticate to Google Cloud
         if: inputs.enable-packages-upload
         id: gcloud-auth
         uses: google-github-actions/auth@v3
@@ -118,20 +138,22 @@ jobs:
           token_format: access_token
           workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GOOGLE_CLOUD_GITHUB_SERVICE_ACCOUNT }}
-      - name: Set up Google Cloud SDK
+      -
+        name: Set up Google Cloud SDK
         if: inputs.enable-packages-upload
         uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
-      - name: Write GPG private key to file
+      -
+        name: Write GPG private key to file
         if: inputs.enable-packages-upload
         run: |
           echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
         shell: bash
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-
-      - name: Run GoReleaser Pro
+      -
+        name: Run GoReleaser Pro
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
         with:
           distribution: goreleaser-pro
