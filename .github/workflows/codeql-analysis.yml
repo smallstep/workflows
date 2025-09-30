@@ -9,7 +9,7 @@ on:
       codeql-build-cmd:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: 'go build ./...'
       goprivate:
         required: false
         type: string

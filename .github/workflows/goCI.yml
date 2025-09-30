@@ -8,7 +8,7 @@ on:
       codeql-build-cmd:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: 'go build ./...'
       codeql-make-bootstrap:
         required: false
         type: boolean
