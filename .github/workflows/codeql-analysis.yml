@@ -90,6 +90,3 @@ jobs:
         with:
           output: codeql-results
           category: "/language:${{ matrix.language }}"
-      -
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
