@@ -9,7 +9,7 @@ on:
       codeql-build-cmd:
         required: false
         type: string
-        default: 'go build ./...'
+        default: 'V=1 make build'
       goprivate:
         required: false
         type: string
@@ -75,6 +75,9 @@ jobs:
           languages: ${{ matrix.language }}
           queries: security-and-quality     # use Canonical suite
           packs: codeql/go-queries          # and pin the official pack explicitly
+      -
+        name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       -
         # List any detected packs/suites in the repo (and submodules)
         name: CodeQL resolve packs
