@@ -73,12 +73,22 @@ jobs:
         uses: github/codeql-action/init@192325c86100d080feab897ff886c34abd4c83a3 # v3.29.5
         with:
           languages: ${{ matrix.language }}
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
+          queries: security-and-quality     # use Canonical suite
+          packs: codeql/go-queries          # and pin the official pack explicitly
+      -
+        # List any detected packs/suites in the repo (and submodules)
+        name: CodeQL resolve packs
+        run: |
+          /opt/hostedtoolcache/CodeQL/*/x64/codeql/codeql resolve qlpacks \
+            --additional-packs . \
+            --format=json | tee qlpacks.json
 
-          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # queries: security-extended,security-and-quality
+      - name: CodeQL resolve queries
+        run: |
+          /opt/hostedtoolcache/CodeQL/*/x64/codeql/codeql resolve queries \
+            codeql/go-queries \
+            --additional-packs . \
+            --format=bylanguage | tee queries.txt
       -
         name: Make bootstrap
         if: inputs.codeql-make-bootstrap
