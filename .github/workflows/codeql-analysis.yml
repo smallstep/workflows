@@ -79,20 +79,6 @@ jobs:
         name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
       -
-        # List any detected packs/suites in the repo (and submodules)
-        name: CodeQL resolve packs
-        run: |
-          /opt/hostedtoolcache/CodeQL/*/x64/codeql/codeql resolve qlpacks \
-            --additional-packs . \
-            --format=json | tee qlpacks.json
-
-      - name: CodeQL resolve queries
-        run: |
-          /opt/hostedtoolcache/CodeQL/*/x64/codeql/codeql resolve queries \
-            codeql/go-queries \
-            --additional-packs . \
-            --format=bylanguage | tee queries.txt
-      -
         name: Make bootstrap
         if: inputs.codeql-make-bootstrap
         run: |
@@ -104,3 +90,6 @@ jobs:
       -
         name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
+        with:
+          output: codeql-results
+          category: "/language:${{ matrix.language }}"
