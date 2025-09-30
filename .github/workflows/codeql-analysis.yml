@@ -33,63 +33,79 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      with:
-        submodules: true
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    - name: Setup Go
-      uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
-      with:
-        go-version: 'stable'
-        check-latest: true
-        cache: true
-    - name: Setup SSH key for private dependencies
-      uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      if: ${{ env.SSH_PRIVATE_KEY != '' }}
-      with:
-        ssh-private-key: |
-          ${{ secrets.SSH_PRIVATE_KEY }}
-    - name: Reconfigure Git for private repos
-      env:
-        PAT: ${{ secrets.PAT }}
-      if: ${{ env.PAT != '' }}
-      run: |
-        git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
-        git config --global url.git@github.com:.insteadOf https://github.com/
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
+      -
+        name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          submodules: true
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      -
+        name: Setup Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 'stable'
+          check-latest: true
+          cache: true
+      -
+        name: Cache Go Modules
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      -
+        name: Setup SSH key for private dependencies
+        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+      -
+        name: Reconfigure Git for private repos
+        env:
+          PAT: ${{ secrets.PAT }}
+        if: ${{ env.PAT != '' }}
+        run: |
+          git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
+          git config --global url.git@github.com:.insteadOf https://github.com/
+      -
+        # Initializes the CodeQL tools for scanning.
+        name: Initialize CodeQL
+        uses: github/codeql-action/init@192325c86100d080feab897ff886c34abd4c83a3 # v3.29.5
+        with:
+          languages: ${{ matrix.language }}
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
 
-        # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-        # queries: security-extended,security-and-quality
+          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+          # queries: security-extended,security-and-quality
+      -
+        name: Make bootstrap
+        if: inputs.codeql-make-bootstrap
+        run: |
+          make bootstrap
+      -
+        # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+        # If this step fails, then you should remove it and run the build manually (see below)
+        name: Autobuild
+        uses: github/codeql-action/autobuild@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
 
-    - name: Make bootstrap
-      if: inputs.codeql-make-bootstrap
-      run: |
-        make bootstrap
+        # ℹ️ Command-line programs to run using the OS shell.
+        # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
+        #   If the Autobuild fails above, remove it and uncomment the following three lines.
+        #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-    #   If the Autobuild fails above, remove it and uncomment the following three lines.
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
-    # - run: |
-    #   echo "Run, Build Application using script"
-    #   ./location_of_script_within_repo/buildscript.sh
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
+      # -
+      #   run: |
+      #   echo "Run, Build Application using script"
+      #   ./location_of_script_within_repo/buildscript.sh
+      -
+        name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5

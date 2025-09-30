@@ -20,30 +20,45 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-      - name: Install Dependencies # Some dependencies require this package
+      -
+        name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
         run: |
           sudo apt-get update
           sudo apt-get install ${{ inputs.os-dependencies }}
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Reconfigure Git for go.step.sm
+      -
+        name: Reconfigure Git for go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
-      - name: Setup Go
+      -
+        name: Setup Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: 'stable'
           check-latest: true
           cache: true
-      - name: Setup SSH key for private dependencies
+      -
+        name: Cache Go Modules
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      -
+        name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -51,7 +66,9 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Install govulncheck
+      -
+        name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run govulncheck
+      -
+        name: Run govulncheck
         run: govulncheck ./...
