@@ -46,6 +46,8 @@ jobs:
           go-version: 'stable'
           check-latest: true
           cache: true
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       -
         name: Cache Go Modules
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
