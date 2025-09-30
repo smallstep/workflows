@@ -5,6 +5,9 @@ on:
         required: false
         type: string
         default: 'V=1 make build'
+      codeql-build-cmd:
+        required: false
+        type: string
       codeql-make-bootstrap:
         required: false
         type: boolean
@@ -116,6 +119,7 @@ jobs:
     with:
       goprivate: ${{ inputs.goprivate }}
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
+      codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
     secrets: inherit
 
   test:
