@@ -94,7 +94,8 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-      - name: chmod cache dir
+      - 
+        name: chmod cache dir
         run: |
           chmod -R 0755 \
             ~/.cache/go-build \
