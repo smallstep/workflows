@@ -94,16 +94,22 @@ jobs:
           go-version: 'stable'
           check-latest: true
           cache: true
-#      -
-#        name: Action Cache
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            ~/.cache/go-build
-#            ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
+      -
+        name: chmod cache dir
+        run: |
+          chmod -R 0755 \
+            ~/.cache/go-build \
+            ~/go/pkg/mod
+      -
+        name: Action Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       -
         name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
@@ -113,10 +119,6 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      -
-        name: go mod download
-        run: |
-          go mod download
       -
         name: Install gotestsum
         run: |
