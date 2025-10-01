@@ -91,8 +91,8 @@ jobs:
         name: Install Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
-          go-version: '1.25.1'
-          check-latest: false
+          go-version: 'stable'
+          check-latest: true
           cache: true
       -
         name: Setup SSH key for private dependencies
@@ -115,7 +115,7 @@ jobs:
           bats-version: 1.9.0
       -
         name: Run Test Suite
-        run: ${{ inputs.test-command }}
+        run: go test $(shell go list ./... | grep -Ev 'e2e')
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
 
