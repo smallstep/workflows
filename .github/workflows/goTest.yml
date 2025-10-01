@@ -106,7 +106,6 @@ jobs:
       -
         name: Install gotestsum
         run: |
-          go env
           go install gotest.tools/gotestsum@v${{ inputs.gotestsum-version }}
       -
         name: Setup BATS
@@ -116,9 +115,7 @@ jobs:
           bats-version: 1.9.0
       -
         name: Run Test Suite
-        run: |
-          go env
-          go test $(go list ./... | grep -Ev 'e2e')
+        run: ${{ inputs.test-command }}
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
 
