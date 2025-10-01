@@ -115,7 +115,7 @@ jobs:
           bats-version: 1.9.0
       -
         name: Run Test Suite
-        run: go test $(shell go list ./... | grep -Ev 'e2e')
+        run: go test $(go list ./... | grep -Ev 'e2e')
         env:
           GOTESTSUM_JSONFILE: gotestsum.json
 
