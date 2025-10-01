@@ -94,13 +94,13 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-      - 
+      -
         name: chmod cache dir
         run: |
           chmod -R 0755 \
             ~/.cache/go-build \
             ~/go/pkg/mod
-      - 
+      -
         name: Action Cache
         uses: actions/cache@v4
         with:
