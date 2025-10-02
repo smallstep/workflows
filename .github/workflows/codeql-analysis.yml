@@ -45,6 +45,7 @@ jobs:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Setup Go
+        id: setup-go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: 'stable'
@@ -52,10 +53,11 @@ jobs:
           cache: true
       -
         name: chmod cache dir
+        if: steps.setup-go.outputs.cache-hit == 'true'
         run: |
           chmod -R 0755 \
             ~/.cache/go-build \
-            ~/go/pkg/mod
+            ~/go/pkg/mod || true
       -
         name: Action Cache
         uses: actions/cache@v4
