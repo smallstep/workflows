@@ -88,7 +88,8 @@ jobs:
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
       -
-        name: Install Go
+        name: Setup Go
+        id: setup-go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: ${{ matrix.go }}
@@ -96,10 +97,11 @@ jobs:
           cache: true
       -
         name: chmod cache dir
+        if: steps.setup-go.outputs.cache-hit == 'true'
         run: |
           chmod -R 0755 \
             ~/.cache/go-build \
-            ~/go/pkg/mod
+            ~/go/pkg/mod || true
       -
         name: Action Cache
         uses: actions/cache@v4
