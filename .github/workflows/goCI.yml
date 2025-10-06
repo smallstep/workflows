@@ -119,6 +119,7 @@ jobs:
     uses: ./.github/workflows/codeql-analysis.yml
     with:
       goprivate: ${{ inputs.goprivate }}
+      os-dependencies: ${{ inputs.os-dependencies }}
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
     secrets: inherit
