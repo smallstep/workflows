@@ -9,6 +9,10 @@ on:
         required: false
         type: boolean
         default: false
+      enable-gpg-sign:
+        required: false
+        type: boolean
+        default: false
       goprivate:
         required: false
         type: string
@@ -136,7 +140,7 @@ jobs:
           project_id: ${{ secrets.GOOGLE_CLOUD_PACKAGES_PROJECT_ID }}
       -
         name: Write GPG private key to file
-        if: inputs.enable-packages-upload
+        if: inputs.enable-packages-upload || inputs.enable-gpg-sign
         run: |
           echo "${GPG_PRIVATE_KEY}" > "${GPG_PRIVATE_KEY_FILE}"
         shell: bash
