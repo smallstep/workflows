@@ -109,6 +109,7 @@ linters:
         - github.com/elimity-com/scim
         - github.com/google/go-attestation # temporarily replaced with github.com/smallstep/go-attestation till changes are in upstream
         - github.com/smallstep/certificates # temporarily replace with github.com/smallstep/internal-certificates
+        - github.com/google/go-tpm # temporarily replaced until https://github.com/google/go-tpm/pull/420 is merged
       replace-local: true
     gomodguard:
       blocked:
