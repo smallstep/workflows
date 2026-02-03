@@ -1,0 +1,17 @@
+name: Sync winget-pkgs fork
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # First day of each month at midnight UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync fork with upstream
+        run: |
+          gh api -X POST repos/smallstep/winget-pkgs/merge-upstream \
+            -f branch=master
+        env:
+          GH_TOKEN: ${{ secrets.GORELEASER_PAT }}
