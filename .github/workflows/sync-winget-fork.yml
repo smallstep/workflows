@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Sync fork with upstream
         run: |
-          gh api -X POST repos/smallstep/winget-pkgs/merge-upstream \
-            -f branch=master
-        env:
-          GH_TOKEN: ${{ secrets.GORELEASER_PAT }}
+          git clone --depth 1 https://github.com/microsoft/winget-pkgs.git
+          cd winget-pkgs
+          git remote add fork https://x-access-token:${{ secrets.WINGET_PAT }}@github.com/smallstep/winget-pkgs.git
+          git push fork master --force
