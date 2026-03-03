@@ -19,7 +19,6 @@ jobs:
   actionlint:
     name: Lint GitHub workflows
     uses: ./.github/workflows/actionlint.yml
-    secrets: inherit
 
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
     name: Lint dummy app

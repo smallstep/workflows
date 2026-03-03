@@ -104,7 +104,9 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
       skip-go-generate: ${{ inputs.lint-skip-go-generate }}
       skip-go-mod-tidy: ${{ inputs.lint-skip-go-mod-tidy }}
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PAT: ${{ secrets.PAT }}
 
   govulncheck:
     uses: ./.github/workflows/govulncheck.yml
@@ -112,7 +114,9 @@ jobs:
     with:
       os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PAT: ${{ secrets.PAT }}
 
   codeql:
     if: inputs.run-codeql
@@ -122,7 +126,9 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PAT: ${{ secrets.PAT }}
 
   test:
     uses: ./.github/workflows/goTest.yml
@@ -134,7 +140,10 @@ jobs:
       run-codecov: ${{ inputs.run-codecov }}
       setup-bats: ${{ inputs.setup-bats }}
       test-command: ${{ inputs.test-command }}
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PAT: ${{ secrets.PAT }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     uses: ./.github/workflows/goBuild.yml
@@ -144,4 +153,6 @@ jobs:
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       os-dependencies: ${{ inputs.os-dependencies }}
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PAT: ${{ secrets.PAT }}

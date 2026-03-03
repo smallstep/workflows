@@ -70,9 +70,11 @@ jobs:
       -
         name: Install Dependencies
         if: inputs.os-dependencies != ''
+        env:
+          OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
           sudo apt-get update
-          sudo apt-get install ${{ inputs.os-dependencies }}
+          sudo apt-get install ${OS_DEPS}
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -123,8 +125,10 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Install gotestsum
+        env:
+          GOTESTSUM_VERSION: ${{ inputs.gotestsum-version }}
         run: |
-          go install gotest.tools/gotestsum@v${{ inputs.gotestsum-version }}
+          go install gotest.tools/gotestsum@v${GOTESTSUM_VERSION}
       -
         name: Setup BATS
         if: inputs.setup-bats
@@ -133,9 +137,10 @@ jobs:
           bats-version: 1.9.0
       -
         name: Run Test Suite
-        run: ${{ inputs.test-command }}
         env:
+          TEST_CMD: ${{ inputs.test-command }}
           GOTESTSUM_JSONFILE: gotestsum.json
+        run: ${TEST_CMD}
 
       -
         name: Annotate Test Suite Results
