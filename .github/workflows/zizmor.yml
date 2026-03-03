@@ -3,9 +3,9 @@ on:
   workflow_call:
     inputs:
       advanced-security:
-        description: Upload results to GitHub Advanced Security
-        type: boolean
-        default: false
+        description: Upload results to GitHub Advanced Security. Leave unset to auto-enable for public repos, or set to "true"/"false" to override.
+        type: string
+        default: ""
 
 jobs:
   zizmor:
@@ -20,4 +20,4 @@ jobs:
         with:
           min-severity: medium
           min-confidence: medium
-          advanced-security: ${{ inputs.advanced-security }}
+          advanced-security: ${{ (inputs.advanced-security == '' && github.repository_visibility == 'public') || inputs.advanced-security == 'true' }}

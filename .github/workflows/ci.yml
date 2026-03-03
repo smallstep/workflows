@@ -24,7 +24,7 @@ jobs:
     uses: ./.github/workflows/actionlint.yml
 
   zizmor:
-    name: Scan GitHub workflows
+    name: Security Scan GitHub workflows
     uses: ./.github/workflows/zizmor.yml
 
   frizbee:
