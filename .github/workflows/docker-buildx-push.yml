@@ -69,5 +69,8 @@ jobs:
           build-args: ${{ inputs.docker_build_args }}
       - name: Cosign
         id: cosign
+        env:
+          DOCKER_IMAGE: ${{ inputs.docker_image }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: |
-          cosign sign -r ${{ inputs.docker_image }}@${{ steps.build-and-push.outputs.digest }} --yes
+          cosign sign -r "${DOCKER_IMAGE}@${DIGEST}" --yes

@@ -11,6 +11,9 @@ on:
       - opened
       - synchronize
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -19,6 +22,14 @@ jobs:
   actionlint:
     name: Lint GitHub workflows
     uses: ./.github/workflows/actionlint.yml
+
+  zizmor:
+    name: Scan GitHub workflows
+    uses: ./.github/workflows/zizmor.yml
+
+  frizbee:
+    name: Check action pinning
+    uses: ./.github/workflows/frizbee.yml
 
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
     name: Lint dummy app
