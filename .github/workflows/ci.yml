@@ -19,17 +19,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  actionlint:
-    name: Lint GitHub workflows
-    uses: ./.github/workflows/actionlint.yml
-
-  zizmor:
-    name: Security Scan GitHub workflows
-    uses: ./.github/workflows/zizmor.yml
-
-  frizbee:
-    name: Check action pinning
-    uses: ./.github/workflows/frizbee.yml
+  actionci:
+    uses: ./.github/workflows/actionci.yml
+    permissions:
+      contents: read
+      security-events: write
 
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
     name: Lint dummy app
