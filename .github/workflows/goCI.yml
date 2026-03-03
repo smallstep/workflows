@@ -1,6 +1,3 @@
-permissions:
-  contents: read
-
 on:
   workflow_call:
     inputs:
@@ -123,10 +120,6 @@ jobs:
 
   codeql:
     if: inputs.run-codeql
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
     uses: ./.github/workflows/codeql-analysis.yml
     with:
       goprivate: ${{ inputs.goprivate }}

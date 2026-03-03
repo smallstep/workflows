@@ -1,0 +1,6 @@
+rules:
+  excessive-permissions:
+    ignore:
+      # workflow_call-only: the caller controls the permission ceiling,
+      # so job-level permissions blocks are meaningless here.
+      - goCI.yml
