@@ -93,4 +93,4 @@ jobs:
         name: Build
         env:
           BUILD_CMD: ${{ inputs.build-command }}
-        run: ${BUILD_CMD}
+        run: eval "${BUILD_CMD}"

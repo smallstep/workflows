@@ -141,7 +141,7 @@ jobs:
         env:
           TEST_CMD: ${{ inputs.test-command }}
           GOTESTSUM_JSONFILE: gotestsum.json
-        run: ${TEST_CMD}
+        run: eval "${TEST_CMD}"
 
       -
         name: Annotate Test Suite Results

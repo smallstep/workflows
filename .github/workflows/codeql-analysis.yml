@@ -115,7 +115,7 @@ jobs:
         env:
           CODEQL_BUILD_CMD: ${{ inputs.codeql-build-cmd }}
         run: |
-          ${CODEQL_BUILD_CMD}
+          eval "${CODEQL_BUILD_CMD}"
       -
         name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4
