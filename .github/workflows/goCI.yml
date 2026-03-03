@@ -146,9 +146,13 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   zizmor:
+    permissions:
+      contents: read
     uses: ./.github/workflows/zizmor.yml
 
   frizbee:
+    permissions:
+      contents: read
     uses: ./.github/workflows/frizbee.yml
 
   build:
