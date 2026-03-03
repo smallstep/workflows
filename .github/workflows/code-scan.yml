@@ -9,4 +9,4 @@ on:
 jobs:
   codeql:
     if: inputs.run-codeql
-    uses: smallstep/workflows/.github/workflows/codeql-analysis.yml@main
+    uses: ./.github/workflows/codeql-analysis.yml

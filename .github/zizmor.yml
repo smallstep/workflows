@@ -4,7 +4,6 @@ rules:
   # would defeat the purpose of the shared workflows repo.
   unpinned-uses:
     ignore:
-      - code-scan.yml:12
       - goreleaser.yml:133
       - goreleaser.yml:141
   # These workflows either lack a top-level `permissions:` block
