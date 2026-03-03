@@ -57,6 +57,7 @@ jobs:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
           sudo apt-get update
+          # shellcheck disable=SC2086
           sudo apt-get install ${OS_DEPS}
       -
         name: Checkout

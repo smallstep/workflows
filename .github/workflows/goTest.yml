@@ -74,6 +74,7 @@ jobs:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
           sudo apt-get update
+          # shellcheck disable=SC2086
           sudo apt-get install ${OS_DEPS}
       -
         name: Checkout
@@ -128,7 +129,7 @@ jobs:
         env:
           GOTESTSUM_VERSION: ${{ inputs.gotestsum-version }}
         run: |
-          go install gotest.tools/gotestsum@v${GOTESTSUM_VERSION}
+          go install "gotest.tools/gotestsum@v${GOTESTSUM_VERSION}"
       -
         name: Setup BATS
         if: inputs.setup-bats
