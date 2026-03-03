@@ -145,12 +145,6 @@ jobs:
       PAT: ${{ secrets.PAT }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  zizmor:
-    uses: ./.github/workflows/zizmor.yml
-
-  frizbee:
-    uses: ./.github/workflows/frizbee.yml
-
   build:
     uses: ./.github/workflows/goBuild.yml
     if: inputs.run-build
