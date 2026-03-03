@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       advanced-security:
-        description: Upload results to GitHub Advanced Security (requires GHAS)
+        description: Upload results to GitHub Advanced Security
         type: boolean
         default: true
 
