@@ -11,6 +11,9 @@ on:
       - opened
       - synchronize
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -22,14 +25,10 @@ jobs:
 
   zizmor:
     name: Scan GitHub workflows
-    permissions:
-      contents: read
     uses: ./.github/workflows/zizmor.yml
 
   frizbee:
     name: Check action pinning
-    permissions:
-      contents: read
     uses: ./.github/workflows/frizbee.yml
 
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
