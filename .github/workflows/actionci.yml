@@ -14,10 +14,10 @@ on:
         type: boolean
         default: true
       zizmor-advanced-security:
-        description: Upload zizmor results to GitHub Advanced Security
+        description: Upload zizmor results to GitHub Advanced Security. Leave unset to auto-enable for public repos, or set to "true"/"false" to override.
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
