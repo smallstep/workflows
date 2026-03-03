@@ -20,6 +20,14 @@ jobs:
     name: Lint GitHub workflows
     uses: ./.github/workflows/actionlint.yml
 
+  zizmor:
+    name: Scan GitHub workflows
+    uses: ./.github/workflows/zizmor.yml
+
+  frizbee:
+    name: Check action pinning
+    uses: ./.github/workflows/frizbee.yml
+
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
     name: Lint dummy app
     runs-on: ubuntu-latest

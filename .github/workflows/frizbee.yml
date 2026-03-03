@@ -1,0 +1,19 @@
+name: Frizbee pinning check
+on:
+  workflow_call:
+
+jobs:
+  frizbee:
+    name: Check action pinning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Check pinning
+        uses: stacklok/frizbee-action@c7009cdb455a69ae0dab0c37f296e0f545b4211c # v0.0.5
+        with:
+          action: check
+          fail_on_unpinned: true
