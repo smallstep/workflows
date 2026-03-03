@@ -1,6 +1,11 @@
 name: Zizmor security scan
 on:
   workflow_call:
+    inputs:
+      advanced-security:
+        description: Upload results to GitHub Advanced Security (requires GHAS)
+        type: boolean
+        default: true
 
 jobs:
   zizmor:
@@ -18,3 +23,4 @@ jobs:
         with:
           min-severity: medium
           min-confidence: medium
+          advanced-security: ${{ inputs.advanced-security }}
