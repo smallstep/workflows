@@ -53,9 +53,12 @@ jobs:
       -
         name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
+        env:
+          OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
           sudo apt-get update
-          sudo apt-get install ${{ inputs.os-dependencies }}
+          # shellcheck disable=SC2086
+          sudo apt-get install ${OS_DEPS}
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -88,4 +91,6 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Build
-        run: ${{ inputs.build-command }}
+        env:
+          BUILD_CMD: ${{ inputs.build-command }}
+        run: eval "${BUILD_CMD}"

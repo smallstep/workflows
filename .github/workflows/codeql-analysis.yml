@@ -43,9 +43,12 @@ jobs:
       -
         name: Install Dependencies
         if: ${{ inputs.os-dependencies != '' }}
+        env:
+          OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
           sudo apt-get update
-          sudo apt-get install ${{ inputs.os-dependencies }}
+          # shellcheck disable=SC2086
+          sudo apt-get install ${OS_DEPS}
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -109,8 +112,10 @@ jobs:
           make bootstrap
       -
         name: Build
+        env:
+          CODEQL_BUILD_CMD: ${{ inputs.codeql-build-cmd }}
         run: |
-          ${{ inputs.codeql-build-cmd }}
+          eval "${CODEQL_BUILD_CMD}"
       -
         name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4

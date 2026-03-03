@@ -15,6 +15,10 @@ on:
         type: boolean
         default: true
 
+permissions:
+  pull-requests: write
+  issues: write
+
 jobs:
   label-pr:
     name: Label PR
