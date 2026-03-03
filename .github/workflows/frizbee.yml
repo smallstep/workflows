@@ -14,6 +14,8 @@ jobs:
           persist-credentials: false
       - name: Check pinning
         uses: stacklok/frizbee-action@c7009cdb455a69ae0dab0c37f296e0f545b4211c # v0.0.5
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          action: check
+          open_pr: false
           fail_on_unpinned: true
