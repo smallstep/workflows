@@ -1,11 +1,4 @@
 rules:
-  # Internal reusable workflows (smallstep/*@main) intentionally track
-  # the main branch for centralized CI management. Pinning to a SHA
-  # would defeat the purpose of the shared workflows repo.
-  unpinned-uses:
-    ignore:
-      - goreleaser.yml:133
-      - goreleaser.yml:141
   # These workflows either lack a top-level `permissions:` block
   # (using GitHub defaults) or delegate to reusable workflows that
   # declare their own minimal permissions internally.
