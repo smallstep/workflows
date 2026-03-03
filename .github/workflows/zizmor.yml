@@ -5,7 +5,7 @@ on:
       advanced-security:
         description: Upload results to GitHub Advanced Security
         type: boolean
-        default: true
+        default: false
 
 jobs:
   zizmor:
