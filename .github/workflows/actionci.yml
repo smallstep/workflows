@@ -1,0 +1,41 @@
+on:
+  workflow_call:
+    inputs:
+      run-actionlint:
+        required: false
+        type: boolean
+        default: true
+      run-frizbee:
+        required: false
+        type: boolean
+        default: true
+      run-zizmor:
+        required: false
+        type: boolean
+        default: true
+      zizmor-advanced-security:
+        description: Upload zizmor results to GitHub Advanced Security
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    uses: ./.github/workflows/actionlint.yml
+    if: inputs.run-actionlint
+
+  frizbee:
+    uses: ./.github/workflows/frizbee.yml
+    if: inputs.run-frizbee
+
+  zizmor:
+    uses: ./.github/workflows/zizmor.yml
+    if: inputs.run-zizmor
+    with:
+      advanced-security: ${{ inputs.zizmor-advanced-security }}
+    permissions:
+      contents: read
+      security-events: write
