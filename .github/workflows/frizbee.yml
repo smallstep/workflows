@@ -1,3 +1,4 @@
+# Deprecated: unpinned action detection is already covered by zizmor.
 name: Frizbee pinning check
 on:
   workflow_call:
@@ -7,20 +8,4 @@ jobs:
     name: frizbee
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: Install frizbee
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh release download v0.1.8 --repo stacklok/frizbee \
-            --pattern 'frizbee_0.1.8_linux_amd64.tar.gz' \
-            --output frizbee.tar.gz
-          tar -xzf frizbee.tar.gz frizbee
-          sudo mv frizbee /usr/local/bin/
-          rm frizbee.tar.gz
-      - name: Check pinning
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: frizbee actions --dry-run --error .github/workflows/
+      - run: echo "Skipped — unpinned action detection is covered by zizmor."
