@@ -23,4 +23,15 @@ jobs:
       - name: Check pinning
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: frizbee actions --dry-run --error .github/workflows/
+        run: |
+          # Run frizbee and capture exit code
+          frizbee actions --dry-run --error .github/workflows/ && exit 0
+
+          # On failure, show exactly which actions are unpinned
+          echo ""
+          echo "The following actions are not pinned to a SHA digest:"
+          echo ""
+          grep -rn 'uses:' .github/workflows/ | grep -v '@[0-9a-f]\{40,\}' | grep -v '^#' || true
+          echo ""
+          echo "Fix with: frizbee actions .github/workflows/"
+          exit 1
