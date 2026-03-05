@@ -5,10 +5,6 @@ on:
         required: false
         type: boolean
         default: true
-      run-frizbee:
-        required: false
-        type: boolean
-        default: true
       run-zizmor:
         required: false
         type: boolean
@@ -26,10 +22,6 @@ jobs:
   actionlint:
     uses: ./.github/workflows/actionlint.yml
     if: inputs.run-actionlint
-
-  frizbee:
-    uses: ./.github/workflows/frizbee.yml
-    if: inputs.run-frizbee
 
   zizmor:
     uses: ./.github/workflows/zizmor.yml
