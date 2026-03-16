@@ -4,7 +4,7 @@ on:
       cosign-version:
         required: false
         type: string
-        default: 'v2.2.3'
+        default: 'v2.6.2'
       enable-packages-upload:
         required: false
         type: boolean
