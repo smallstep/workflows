@@ -133,6 +133,7 @@ linters:
       # Default: []
       disable:
         - fieldalignment
+        - inline
       # Enable all analyzers.
       # Default: false
       enable-all: true
