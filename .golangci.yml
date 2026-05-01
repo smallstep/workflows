@@ -20,7 +20,7 @@ linters:
     - gocritic
     - goheader
     - gomoddirectives
-    - gomodguard
+    - gomodguard_v2
     - gosec
     - govet
     - ineffassign
@@ -111,23 +111,22 @@ linters:
         - github.com/smallstep/certificates # temporarily replace with github.com/smallstep/internal-certificates
         - github.com/google/go-tpm # temporarily replaced until https://github.com/google/go-tpm/pull/420 is merged
       replace-local: true
-    gomodguard:
+    gomodguard_v2:
+      # List of blocked modules.
+      # Default: []
       blocked:
-        # List of blocked modules.
-        # Default: []
-        modules:
-          - github.com/golang/protobuf:
-              recommendations:
-                - google.golang.org/protobuf
-              reason: see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules
-          - github.com/satori/go.uuid:
-              recommendations:
-                - github.com/google/uuid
-              reason: satori's package is not maintained
-          - github.com/gofrs/uuid:
-              recommendations:
-                - github.com/google/uuid
-              reason: 'see recommendation from dev-infra team: https://confluence.gtforge.com/x/gQI6Aw'
+        - module: github.com/golang/protobuf
+          recommendations:
+            - google.golang.org/protobuf
+          reason: see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules
+        - module: github.com/satori/go.uuid
+          recommendations:
+            - github.com/google/uuid
+          reason: satori's package is not maintained
+        - module: github.com/gofrs/uuid
+          recommendations:
+            - github.com/google/uuid
+          reason: 'see recommendation from dev-infra team: https://confluence.gtforge.com/x/gQI6Aw'
     govet:
       # Disable analyzers by name.
       # Run `go tool vet help` to see all analyzers.
