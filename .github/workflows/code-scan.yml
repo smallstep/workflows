@@ -13,6 +13,10 @@ on:
         required: false
         type: string
         default: ''
+      codeql-runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
 
 permissions:
   actions: read
@@ -26,3 +30,4 @@ jobs:
     with:
       codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
       codeql-build-mode: ${{ inputs.codeql-build-mode }}
+      codeql-runs-on: ${{ inputs.codeql-runs-on }}

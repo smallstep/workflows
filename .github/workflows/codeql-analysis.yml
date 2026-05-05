@@ -14,6 +14,10 @@ on:
         required: false
         type: string
         default: ''
+      codeql-runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
       goprivate:
         required: false
         type: string
@@ -30,7 +34,7 @@ on:
 jobs:
   codeql-analyze:
     name: CodeQL Analyze
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.codeql-runs-on }}
     strategy:
       fail-fast: false
       matrix:

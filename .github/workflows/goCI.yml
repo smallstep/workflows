@@ -16,6 +16,10 @@ on:
       codeql-make-bootstrap:
         required: false
         type: boolean
+      codeql-runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
       golangci-lint-version:
         required: false
         type: string
@@ -122,6 +126,7 @@ jobs:
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
       codeql-build-mode: ${{ inputs.codeql-build-mode }}
+      codeql-runs-on: ${{ inputs.codeql-runs-on }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
