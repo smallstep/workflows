@@ -9,6 +9,10 @@ on:
         required: false
         type: string
         default: 'V=1 make build'
+      codeql-build-mode:
+        required: false
+        type: string
+        default: ''
       codeql-make-bootstrap:
         required: false
         type: boolean
@@ -117,6 +121,7 @@ jobs:
       os-dependencies: ${{ inputs.os-dependencies }}
       codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
+      codeql-build-mode: ${{ inputs.codeql-build-mode }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
