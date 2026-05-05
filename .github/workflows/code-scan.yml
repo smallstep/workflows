@@ -21,6 +21,14 @@ on:
         required: false
         type: string
         default: ''
+      os-dependencies:
+        required: false
+        type: string
+        default: ''
+      codeql-os-dependencies:
+        required: false
+        type: string
+        default: ''
 
 permissions:
   actions: read
@@ -35,3 +43,4 @@ jobs:
       runs-on: ${{ inputs.codeql-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       build-cmd: ${{ inputs.codeql-build-cmd }}
       build-mode: ${{ inputs.codeql-build-mode }}
+      os-dependencies: ${{ inputs.codeql-os-dependencies || inputs.os-dependencies || '' }}

@@ -90,6 +90,7 @@ jobs:
       -
         name: Configure Linter
         if:  ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
+        shell: bash
         run: |
           curl -O https://raw.githubusercontent.com/smallstep/workflows/main/.golangci.yml
       -

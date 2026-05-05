@@ -59,6 +59,27 @@ on:
       os-dependencies:
         required: false
         type: string
+        default: ''
+      build-os-dependencies:
+        required: false
+        type: string
+        default: ''
+      codeql-os-dependencies:
+        required: false
+        type: string
+        default: ''
+      govulncheck-os-dependencies:
+        required: false
+        type: string
+        default: ''
+      lint-os-dependencies:
+        required: false
+        type: string
+        default: ''
+      test-os-dependencies:
+        required: false
+        type: string
+        default: ''
       run-actionlint:
         required: false
         type: boolean
@@ -121,7 +142,7 @@ jobs:
       goprivate: ${{ inputs.goprivate }}
       golangci-lint-version: ${{ inputs.golangci-lint-version }}
       golangci-lint-args: ${{ inputs.golangci-lint-args }}
-      os-dependencies: ${{ inputs.os-dependencies }}
+      os-dependencies: ${{ inputs.lint-os-dependencies || inputs.os-dependencies || '' }}
       skip-go-generate: ${{ inputs.lint-skip-go-generate }}
       skip-go-mod-tidy: ${{ inputs.lint-skip-go-mod-tidy }}
     secrets:
@@ -133,7 +154,7 @@ jobs:
     if: inputs.run-govulncheck
     with:
       runs-on: ${{ inputs.govulncheck-runs-on || inputs.runs-on || 'ubuntu-latest' }}
-      os-dependencies: ${{ inputs.os-dependencies }}
+      os-dependencies: ${{ inputs.govulncheck-os-dependencies || inputs.os-dependencies || '' }}
       goprivate: ${{ inputs.goprivate }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -145,7 +166,7 @@ jobs:
     with:
       runs-on: ${{ inputs.codeql-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       goprivate: ${{ inputs.goprivate }}
-      os-dependencies: ${{ inputs.os-dependencies }}
+      os-dependencies: ${{ inputs.codeql-os-dependencies || inputs.os-dependencies || '' }}
       make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       build-cmd: ${{ inputs.codeql-build-cmd }}
       build-mode: ${{ inputs.codeql-build-mode }}
@@ -160,7 +181,7 @@ jobs:
       runs-on: ${{ inputs.test-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
-      os-dependencies: ${{ inputs.os-dependencies }}
+      os-dependencies: ${{ inputs.test-os-dependencies || inputs.os-dependencies || '' }}
       run-codecov: ${{ inputs.run-codecov }}
       setup-bats: ${{ inputs.setup-bats }}
       test-command: ${{ inputs.test-command }}
@@ -177,7 +198,7 @@ jobs:
       build-command: ${{ inputs.build-command }}
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
-      os-dependencies: ${{ inputs.os-dependencies }}
+      os-dependencies: ${{ inputs.build-os-dependencies || inputs.os-dependencies || '' }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
