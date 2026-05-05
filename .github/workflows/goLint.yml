@@ -43,12 +43,29 @@ jobs:
       -
         name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
+        shell: bash
         env:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
-          sudo apt-get update
-          # shellcheck disable=SC2086
-          sudo apt-get install ${OS_DEPS}
+          case "${RUNNER_OS}" in
+            Linux)
+              sudo apt-get update
+              # shellcheck disable=SC2086
+              sudo apt-get install -y ${OS_DEPS}
+              ;;
+            macOS)
+              # shellcheck disable=SC2086
+              brew install ${OS_DEPS}
+              ;;
+            Windows)
+              # shellcheck disable=SC2086
+              choco install -y ${OS_DEPS}
+              ;;
+            *)
+              echo "unsupported RUNNER_OS=${RUNNER_OS}" >&2
+              exit 1
+              ;;
+          esac
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -98,6 +115,7 @@ jobs:
       -
         name: Run go generate
         if: ( success() || failure() ) && !inputs.skip-go-generate
+        shell: bash
         run: |
           # delete all go-generated files (that adhere to the comment convention); protobuf code is excluded, because its output is (currently) not fully controlled by tools.go
           git ls-files -z | grep --include \*.go --exclude \*.pb.go -lrIZ "^// Code generated .* DO NOT EDIT\.$" | tr '\0' '\n' | xargs rm -f

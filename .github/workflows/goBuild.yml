@@ -35,14 +35,17 @@ jobs:
       - name: Set go-matrix latest version
         id: set-matrix-latest
         if: inputs.only-latest-golang
+        shell: bash
         run: |
           echo 'matrix={"include":[{"go":"\"stable\""}]}' >> "${GITHUB_ENV}"
       - name: Set default go-matrix
         id: set-matrix-default
         if: inputs.only-latest-golang == false
+        shell: bash
         run: |
           echo 'matrix={"include":[{"go":"\"stable\""},{"go":"\"oldstable\""}]}' >> "${GITHUB_ENV}"
       - id: set-output
+        shell: bash
         run: |
           echo "matrix=${{ env.matrix }}" >> "${GITHUB_OUTPUT}"
 
@@ -57,12 +60,29 @@ jobs:
       -
         name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
+        shell: bash
         env:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
-          sudo apt-get update
-          # shellcheck disable=SC2086
-          sudo apt-get install ${OS_DEPS}
+          case "${RUNNER_OS}" in
+            Linux)
+              sudo apt-get update
+              # shellcheck disable=SC2086
+              sudo apt-get install -y ${OS_DEPS}
+              ;;
+            macOS)
+              # shellcheck disable=SC2086
+              brew install ${OS_DEPS}
+              ;;
+            Windows)
+              # shellcheck disable=SC2086
+              choco install -y ${OS_DEPS}
+              ;;
+            *)
+              echo "unsupported RUNNER_OS=${RUNNER_OS}" >&2
+              exit 1
+              ;;
+          esac
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -95,6 +115,7 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Build
+        shell: bash
         env:
           BUILD_CMD: ${{ inputs.build-command }}
         run: eval "${BUILD_CMD}"
