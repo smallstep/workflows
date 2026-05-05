@@ -16,10 +16,30 @@ on:
       codeql-make-bootstrap:
         required: false
         type: boolean
+      runs-on:
+        required: false
+        type: string
+        default: ''
+      build-runs-on:
+        required: false
+        type: string
+        default: ''
       codeql-runs-on:
         required: false
         type: string
-        default: ubuntu-latest
+        default: ''
+      govulncheck-runs-on:
+        required: false
+        type: string
+        default: ''
+      lint-runs-on:
+        required: false
+        type: string
+        default: ''
+      test-runs-on:
+        required: false
+        type: string
+        default: ''
       golangci-lint-version:
         required: false
         type: string
@@ -97,6 +117,7 @@ jobs:
     uses: ./.github/workflows/goLint.yml
     if: inputs.run-lint
     with:
+      runs-on: ${{ inputs.lint-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       goprivate: ${{ inputs.goprivate }}
       golangci-lint-version: ${{ inputs.golangci-lint-version }}
       golangci-lint-args: ${{ inputs.golangci-lint-args }}
@@ -111,6 +132,7 @@ jobs:
     uses: ./.github/workflows/govulncheck.yml
     if: inputs.run-govulncheck
     with:
+      runs-on: ${{ inputs.govulncheck-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       os-dependencies: ${{ inputs.os-dependencies }}
       goprivate: ${{ inputs.goprivate }}
     secrets:
@@ -121,12 +143,12 @@ jobs:
     if: inputs.run-codeql
     uses: ./.github/workflows/codeql-analysis.yml
     with:
+      runs-on: ${{ inputs.codeql-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       goprivate: ${{ inputs.goprivate }}
       os-dependencies: ${{ inputs.os-dependencies }}
-      codeql-make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
-      codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
-      codeql-build-mode: ${{ inputs.codeql-build-mode }}
-      codeql-runs-on: ${{ inputs.codeql-runs-on }}
+      make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
+      build-cmd: ${{ inputs.codeql-build-cmd }}
+      build-mode: ${{ inputs.codeql-build-mode }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
@@ -135,6 +157,7 @@ jobs:
     uses: ./.github/workflows/goTest.yml
     if: inputs.run-test
     with:
+      runs-on: ${{ inputs.test-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       os-dependencies: ${{ inputs.os-dependencies }}
@@ -150,6 +173,7 @@ jobs:
     uses: ./.github/workflows/goBuild.yml
     if: inputs.run-build
     with:
+      runs-on: ${{ inputs.build-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       build-command: ${{ inputs.build-command }}
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}

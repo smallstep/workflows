@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
       goprivate:
         required: false
         type: string
@@ -38,7 +42,7 @@ on:
 
 jobs:
   set-go-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     outputs:
       matrix: ${{ steps.set-output.outputs.matrix }}
     steps:
@@ -61,7 +65,7 @@ jobs:
 
   test:
     needs: set-go-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     strategy:

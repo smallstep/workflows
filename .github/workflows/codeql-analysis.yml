@@ -3,21 +3,21 @@ name: "CodeQL"
 on:
   workflow_call:
     inputs:
-      codeql-make-bootstrap:
-        required: false
-        type: boolean
-      codeql-build-cmd:
-        required: false
-        type: string
-        default: 'V=1 make build'
-      codeql-build-mode:
-        required: false
-        type: string
-        default: ''
-      codeql-runs-on:
+      runs-on:
         required: false
         type: string
         default: ubuntu-latest
+      build-cmd:
+        required: false
+        type: string
+        default: 'V=1 make build'
+      build-mode:
+        required: false
+        type: string
+        default: ''
+      make-bootstrap:
+        required: false
+        type: boolean
       goprivate:
         required: false
         type: string
@@ -34,7 +34,7 @@ on:
 jobs:
   codeql-analyze:
     name: CodeQL Analyze
-    runs-on: ${{ inputs.codeql-runs-on }}
+    runs-on: ${{ inputs.runs-on }}
     strategy:
       fail-fast: false
       matrix:
@@ -107,12 +107,12 @@ jobs:
         uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           languages: ${{ matrix.language }}
-          build-mode: ${{ inputs.codeql-build-mode }}
+          build-mode: ${{ inputs.build-mode }}
           queries: security-and-quality     # use Canonical suite
           packs: codeql/go-queries          # and pin the official pack explicitly
       -
         name: Make bootstrap
-        if: inputs.codeql-make-bootstrap
+        if: inputs.make-bootstrap
         run: |
           make bootstrap
       -
@@ -121,11 +121,11 @@ jobs:
         # - 'manual' means the caller wants this step to drive the build.
         # 'autobuild' and 'none' are handled by codeql-action itself, so we skip.
         name: Build
-        if: inputs.codeql-build-mode == '' || inputs.codeql-build-mode == 'manual'
+        if: inputs.build-mode == '' || inputs.build-mode == 'manual'
         env:
-          CODEQL_BUILD_CMD: ${{ inputs.codeql-build-cmd }}
+          BUILD_CMD: ${{ inputs.build-cmd }}
         run: |
-          eval "${CODEQL_BUILD_CMD}"
+          eval "${BUILD_CMD}"
       -
         name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
