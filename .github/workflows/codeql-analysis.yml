@@ -10,6 +10,10 @@ on:
         required: false
         type: string
         default: 'V=1 make build'
+      codeql-build-mode:
+        required: false
+        type: string
+        default: ''
       goprivate:
         required: false
         type: string
@@ -99,6 +103,7 @@ jobs:
         uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           languages: ${{ matrix.language }}
+          build-mode: ${{ inputs.codeql-build-mode }}
           queries: security-and-quality     # use Canonical suite
           packs: codeql/go-queries          # and pin the official pack explicitly
       -
@@ -107,7 +112,12 @@ jobs:
         run: |
           make bootstrap
       -
+        # Run only when the selected build mode expects a manual build:
+        # - '' (unset) keeps legacy behavior for existing callers.
+        # - 'manual' means the caller wants this step to drive the build.
+        # 'autobuild' and 'none' are handled by codeql-action itself, so we skip.
         name: Build
+        if: inputs.codeql-build-mode == '' || inputs.codeql-build-mode == 'manual'
         env:
           CODEQL_BUILD_CMD: ${{ inputs.codeql-build-cmd }}
         run: |

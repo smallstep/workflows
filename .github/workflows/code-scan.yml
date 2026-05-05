@@ -5,6 +5,14 @@ on:
         required: false
         type: boolean
         default: true
+      codeql-build-cmd:
+        required: false
+        type: string
+        default: 'V=1 make build'
+      codeql-build-mode:
+        required: false
+        type: string
+        default: ''
 
 permissions:
   actions: read
@@ -15,3 +23,6 @@ jobs:
   codeql:
     if: inputs.run-codeql
     uses: ./.github/workflows/codeql-analysis.yml
+    with:
+      codeql-build-cmd: ${{ inputs.codeql-build-cmd }}
+      codeql-build-mode: ${{ inputs.codeql-build-mode }}
