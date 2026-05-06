@@ -3,21 +3,21 @@ name: "CodeQL"
 on:
   workflow_call:
     inputs:
-      codeql-make-bootstrap:
-        required: false
-        type: boolean
-      codeql-build-cmd:
-        required: false
-        type: string
-        default: 'V=1 make build'
-      codeql-build-mode:
-        required: false
-        type: string
-        default: ''
-      codeql-runs-on:
+      runs-on:
         required: false
         type: string
         default: ubuntu-latest
+      build-cmd:
+        required: false
+        type: string
+        default: 'V=1 make build'
+      build-mode:
+        required: false
+        type: string
+        default: ''
+      make-bootstrap:
+        required: false
+        type: boolean
       goprivate:
         required: false
         type: string
@@ -34,7 +34,7 @@ on:
 jobs:
   codeql-analyze:
     name: CodeQL Analyze
-    runs-on: ${{ inputs.codeql-runs-on }}
+    runs-on: ${{ inputs.runs-on }}
     strategy:
       fail-fast: false
       matrix:
@@ -44,48 +44,44 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-      -
-        name: Install Dependencies
+      - name: Install Dependencies
         if: ${{ inputs.os-dependencies != '' }}
+        shell: bash
         env:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
-          sudo apt-get update
-          # shellcheck disable=SC2086
-          sudo apt-get install ${OS_DEPS}
-      -
-        name: Checkout
+          case "${RUNNER_OS}" in
+            Linux)
+              sudo apt-get update
+              # shellcheck disable=SC2086
+              sudo apt-get install -y ${OS_DEPS}
+              ;;
+            macOS)
+              # shellcheck disable=SC2086
+              brew install ${OS_DEPS}
+              ;;
+            Windows)
+              # shellcheck disable=SC2086
+              choco install -y ${OS_DEPS}
+              ;;
+            *)
+              echo "unsupported RUNNER_OS=${RUNNER_OS}" >&2
+              exit 1
+              ;;
+          esac
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          submodules: true
+          submodules: recursive
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      -
-        name: Setup Go
-        id: setup-go
+      - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: 'stable'
           check-latest: true
           cache: true
-      -
-        name: chmod cache dir
-        if: steps.setup-go.outputs.cache-hit == 'true'
-        run: |
-          chmod -R 0755 \
-            ~/.cache/go-build \
-            ~/go/pkg/mod || true
-      -
-        name: Action Cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      -
-        name: Setup SSH key for private dependencies
+          cache-dependency-path: '**/go.sum'
+      - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -93,41 +89,37 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      -
-        name: Reconfigure Git for private repos
+      - name: Reconfigure Git for private repos
+        if: ${{ env.PAT != '' }}
         env:
           PAT: ${{ secrets.PAT }}
-        if: ${{ env.PAT != '' }}
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
-      -
-        # Initializes the CodeQL tools for scanning.
-        name: Initialize CodeQL
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
         uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           languages: ${{ matrix.language }}
-          build-mode: ${{ inputs.codeql-build-mode }}
-          queries: security-and-quality     # use Canonical suite
-          packs: codeql/go-queries          # and pin the official pack explicitly
-      -
-        name: Make bootstrap
-        if: inputs.codeql-make-bootstrap
+          build-mode: ${{ inputs.build-mode }}
+          queries: security-and-quality # use Canonical suite
+          packs: codeql/go-queries # and pin the official pack explicitly
+      - name: Make bootstrap
+        if: inputs.make-bootstrap
         run: |
           make bootstrap
-      -
-        # Run only when the selected build mode expects a manual build:
-        # - '' (unset) keeps legacy behavior for existing callers.
-        # - 'manual' means the caller wants this step to drive the build.
-        # 'autobuild' and 'none' are handled by codeql-action itself, so we skip.
-        name: Build
-        if: inputs.codeql-build-mode == '' || inputs.codeql-build-mode == 'manual'
+      # Run only when the selected build mode expects a manual build:
+      # - '' (unset) keeps legacy behavior for existing callers.
+      # - 'manual' means the caller wants this step to drive the build.
+      # 'autobuild' and 'none' are handled by codeql-action itself, so we skip.
+      - name: Build
+        if: inputs.build-mode == '' || inputs.build-mode == 'manual'
+        shell: bash
         env:
-          CODEQL_BUILD_CMD: ${{ inputs.codeql-build-cmd }}
+          BUILD_CMD: ${{ inputs.build-cmd }}
         run: |
-          eval "${CODEQL_BUILD_CMD}"
-      -
-        name: Perform CodeQL Analysis
+          eval "${BUILD_CMD}"
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           output: codeql-results

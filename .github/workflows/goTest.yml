@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
       goprivate:
         required: false
         type: string
@@ -61,7 +65,7 @@ jobs:
 
   test:
     needs: set-go-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     strategy:
@@ -70,12 +74,29 @@ jobs:
       -
         name: Install Dependencies
         if: inputs.os-dependencies != ''
+        shell: bash
         env:
           OS_DEPS: ${{ inputs.os-dependencies }}
         run: |
-          sudo apt-get update
-          # shellcheck disable=SC2086
-          sudo apt-get install ${OS_DEPS}
+          case "${RUNNER_OS}" in
+            Linux)
+              sudo apt-get update
+              # shellcheck disable=SC2086
+              sudo apt-get install -y ${OS_DEPS}
+              ;;
+            macOS)
+              # shellcheck disable=SC2086
+              brew install ${OS_DEPS}
+              ;;
+            Windows)
+              # shellcheck disable=SC2086
+              choco install -y ${OS_DEPS}
+              ;;
+            *)
+              echo "unsupported RUNNER_OS=${RUNNER_OS}" >&2
+              exit 1
+              ;;
+          esac
       -
         name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -84,37 +105,20 @@ jobs:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Reconfigure for Git go.step.sm
+        if: env.PAT != ''
         env:
           PAT: ${{ secrets.PAT }}
-        if: env.PAT != ''
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
       -
         name: Setup Go
-        id: setup-go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-      -
-        name: chmod cache dir
-        if: steps.setup-go.outputs.cache-hit == 'true'
-        run: |
-          chmod -R 0755 \
-            ~/.cache/go-build \
-            ~/go/pkg/mod || true
-      -
-        name: Action Cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache-dependency-path: '**/go.sum'
       -
         name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
@@ -126,10 +130,10 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
       -
         name: Install gotestsum
+        shell: bash
         env:
           GOTESTSUM_VERSION: ${{ inputs.gotestsum-version }}
-        run: |
-          go install "gotest.tools/gotestsum@v${GOTESTSUM_VERSION}"
+        run: go install "gotest.tools/gotestsum@v${GOTESTSUM_VERSION}"
       -
         name: Setup BATS
         if: inputs.setup-bats
@@ -138,6 +142,7 @@ jobs:
           bats-version: 1.9.0
       -
         name: Run Test Suite
+        shell: bash
         env:
           TEST_CMD: ${{ inputs.test-command }}
           GOTESTSUM_JSONFILE: gotestsum.json
