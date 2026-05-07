@@ -33,6 +33,8 @@ on:
 
 permissions:
   actions: read
+  contents: read
+  security-events: write
 
 jobs:
   codeql-analyze:
