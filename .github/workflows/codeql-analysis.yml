@@ -31,6 +31,9 @@ on:
       PAT:
         required: false
 
+permissions:
+  actions: read
+
 jobs:
   codeql-analyze:
     name: CodeQL Analyze
