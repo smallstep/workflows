@@ -31,6 +31,10 @@ on:
       PAT:
         required: false
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   codeql-analyze:
     name: CodeQL Analyze
