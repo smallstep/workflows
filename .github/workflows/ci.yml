@@ -23,6 +23,7 @@ jobs:
     uses: ./.github/workflows/actionci.yml
     permissions:
       contents: read
+      actions: read
       security-events: write
 
   lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
