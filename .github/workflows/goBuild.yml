@@ -26,6 +26,9 @@ on:
       PAT:
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   set-go-matrix:
     runs-on: ubuntu-latest

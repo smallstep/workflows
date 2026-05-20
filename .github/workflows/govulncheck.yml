@@ -18,6 +18,9 @@ on:
       PAT:
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   govulncheck:
     runs-on: ${{ inputs.runs-on }}

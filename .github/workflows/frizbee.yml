@@ -3,6 +3,8 @@ name: Frizbee pinning check
 on:
   workflow_call:
 
+permissions: {}
+
 jobs:
   frizbee:
     name: frizbee
