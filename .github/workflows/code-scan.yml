@@ -29,6 +29,11 @@ on:
         required: false
         type: string
         default: ''
+    secrets:
+      PAT:
+        required: false
+      SSH_PRIVATE_KEY:
+        required: false
 
 permissions:
   actions: read
@@ -44,3 +49,6 @@ jobs:
       build-cmd: ${{ inputs.codeql-build-cmd }}
       build-mode: ${{ inputs.codeql-build-mode }}
       os-dependencies: ${{ inputs.codeql-os-dependencies || inputs.os-dependencies || '' }}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
