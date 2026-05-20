@@ -4,42 +4,42 @@ on:
       build-command:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: "V=1 make build"
       codeql-build-cmd:
         required: false
         type: string
-        default: 'V=1 make build'
+        default: "V=1 make build"
       codeql-build-mode:
         required: false
         type: string
-        default: ''
+        default: ""
       codeql-make-bootstrap:
         required: false
         type: boolean
       runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       build-runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       codeql-runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       govulncheck-runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       lint-runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       test-runs-on:
         required: false
         type: string
-        default: ''
+        default: ""
       golangci-lint-version:
         required: false
         type: string
@@ -47,11 +47,11 @@ on:
       golangci-lint-args:
         required: false
         type: string
-        default: '--timeout=30m'
+        default: "--timeout=30m"
       goprivate:
         required: false
         type: string
-        default: go.step.sm,github.com/smallstep
+        default: go.step.sm/,github.com/smallstep/
       only-latest-golang:
         required: false
         type: boolean
@@ -59,27 +59,27 @@ on:
       os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       build-os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       codeql-os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       govulncheck-os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       lint-os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       test-os-dependencies:
         required: false
         type: string
-        default: ''
+        default: ""
       run-actionlint:
         required: false
         type: boolean
@@ -115,7 +115,7 @@ on:
       test-command:
         required: false
         type: string
-        default: 'gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...'
+        default: "gotestsum -- -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./..."
       lint-skip-go-generate:
         required: false
         type: boolean
@@ -133,7 +133,6 @@ on:
         required: false
 
 jobs:
-
   lint:
     uses: ./.github/workflows/goLint.yml
     if: inputs.run-lint
@@ -160,6 +159,11 @@ jobs:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
 
+  # NOTE(@azazeal): callers that set run-codeql: true must also grant
+  # security-events: write to the job that calls goCI.yml. Reusable workflows
+  # cannot be granted more than the caller has.
+  #
+  # ref: https://docs.github.com/en/actions/reference/reusable-workflows-reference
   codeql:
     if: inputs.run-codeql
     uses: ./.github/workflows/codeql-analysis.yml
@@ -170,6 +174,9 @@ jobs:
       make-bootstrap: ${{ inputs.codeql-make-bootstrap }}
       build-cmd: ${{ inputs.codeql-build-cmd }}
       build-mode: ${{ inputs.codeql-build-mode }}
+    permissions:
+      contents: read
+      security-events: write
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}

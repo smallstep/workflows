@@ -31,6 +31,11 @@ jobs:
     uses: ./.github/workflows/frizbee.yml
     if: inputs.run-frizbee
 
+  # NOTE(@azazeal): callers that set run-zizmor: true (the default) must also
+  # grant actions: read and security-events: write to the job that calls
+  # actionci.yml. Reusable workflows cannot be granted more than the caller has.
+  #
+  # ref: https://docs.github.com/en/actions/reference/reusable-workflows-reference
   zizmor:
     uses: ./.github/workflows/zizmor.yml
     if: inputs.run-zizmor
@@ -38,4 +43,5 @@ jobs:
       advanced-security: ${{ inputs.zizmor-advanced-security }}
     permissions:
       contents: read
+      actions: read
       security-events: write

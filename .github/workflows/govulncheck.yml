@@ -11,12 +11,15 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm,github.com/smallstep
+        default: go.step.sm/,github.com/smallstep/
     secrets:
       SSH_PRIVATE_KEY:
         required: false
       PAT:
         required: false
+
+permissions:
+  contents: read
 
 jobs:
   govulncheck:
@@ -24,8 +27,7 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-      -
-        name: Install Dependencies # Some dependencies require this package
+      - name: Install Dependencies # Some dependencies require this package
         if: ${{ inputs.os-dependencies != '' }}
         shell: bash
         env:
@@ -50,30 +52,26 @@ jobs:
               exit 1
               ;;
           esac
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      -
-        name: Reconfigure Git for go.step.sm
+      - name: Reconfigure Git for go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
         if: ${{ env.PAT != '' }}
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
-      -
-        name: Setup Go
+      - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: 'stable'
+          go-version: "stable"
           check-latest: true
           cache: true
-          cache-dependency-path: '**/go.sum'
-      -
-        name: Setup SSH key for private dependencies
+          cache-dependency-path: "**/go.sum"
+      - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -81,9 +79,7 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-      -
-        name: Install govulncheck
+      - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      -
-        name: Run govulncheck
+      - name: Run govulncheck
         run: govulncheck ./...
