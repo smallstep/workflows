@@ -51,7 +51,7 @@ on:
       goprivate:
         required: false
         type: string
-        default: go.step.sm,github.com/smallstep
+        default: go.step.sm/,github.com/smallstep/
       only-latest-golang:
         required: false
         type: boolean
