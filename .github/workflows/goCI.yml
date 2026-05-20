@@ -160,8 +160,8 @@ jobs:
       PAT: ${{ secrets.PAT }}
 
   # NOTE(@azazeal): callers that set run-codeql: true must also grant
-  # security-events: write to the job that calls goCI.yml. Reusable workflows
-  # cannot be granted more than the caller has.
+  # actions: read and security-events: write to the job that calls goCI.yml.
+  # Reusable workflows cannot be granted more than the caller has.
   #
   # ref: https://docs.github.com/en/actions/reference/reusable-workflows-reference
   codeql:
@@ -176,6 +176,7 @@ jobs:
       build-mode: ${{ inputs.codeql-build-mode }}
     permissions:
       contents: read
+      actions: read
       security-events: write
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
