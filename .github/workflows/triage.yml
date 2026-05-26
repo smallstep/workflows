@@ -25,7 +25,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     runs-on: ubuntu-latest
     permissions:
-      issues: write
       pull-requests: write
     steps:
     - name: Label PR
