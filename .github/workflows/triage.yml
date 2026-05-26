@@ -28,8 +28,8 @@ jobs:
       issues: write
     steps:
     - name: Label PR
-      run: |
-        gh pr edit ${{ github.event.pull_request.number }} --add-label "needs triage"
+      run: | # plain GitHub API call replaces "gh pr edit"
+        gh api --method POST repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --field 'labels[]=needs triage'
 
   add-oss-project:
     name: Add to OSS Triage Project
