@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      pull-requests: write
     steps:
     - name: Label PR
       run: | # plain GitHub API call replaces "gh pr edit"
