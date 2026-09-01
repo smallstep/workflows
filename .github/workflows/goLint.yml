@@ -15,7 +15,7 @@ on:
       golangci-lint-version:
         required: false
         type: string
-        default: latest
+        default: "" # empty means take it from .versions
       golangci-lint-args:
         required: false
         type: string
@@ -96,13 +96,17 @@ jobs:
         id: configure-linter
         if: ${{ hashFiles('.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json') == '' }}
         shell: bash
+        env:
+          WORKFLOW_REPOSITORY: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
         run: |
           # GH Actions runs `bash --noprofile --norc -eo pipefail`; `-u` is added on top
           # so a typo in a variable name fails loudly instead of expanding to empty.
           set -euo pipefail
 
           CONFIG="${RUNNER_TEMP}/golangci-lint-fallback.yml"
-          curl -fsSL --output "${CONFIG}" https://raw.githubusercontent.com/smallstep/workflows/main/.golangci.yml
+          curl -fsSL --output "${CONFIG}" \
+            "https://raw.githubusercontent.com/${WORKFLOW_REPOSITORY}/${WORKFLOW_SHA}/.golangci.yml"
           echo "extra-args=--config=${CONFIG}" >> "${GITHUB_OUTPUT}"
 
       - name: Reconfigure Git for private repos
@@ -113,15 +117,53 @@ jobs:
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
 
+      - name: Resolve the golangci-lint version
+        id: version
+        shell: bash
+        env:
+          OVERRIDE: ${{ inputs.golangci-lint-version }}
+          WORKFLOW_REPOSITORY: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+
+          # latest or "" means whatever's in .versions.
+          if [ -n "${OVERRIDE}" ] && [ "${OVERRIDE}" != latest ]; then
+            version="${OVERRIDE}"
+          else
+            versions="$(curl --fail --silent --show-error --location \
+              "https://raw.githubusercontent.com/${WORKFLOW_REPOSITORY}/${WORKFLOW_SHA}/.versions")"
+
+            version="$(printf '%s\n' "${versions}" | awk '$1 == "golangci-lint" { print $2 }')"
+            if [ -z "${version}" ]; then
+              echo "::error::.versions at ${WORKFLOW_SHA} carries no golangci-lint entry"
+              exit 1
+            fi
+          fi
+
+          # NOTE(@azazeal): a version may arrive with or without a leading v and
+          # the tools expect one; anything else, latest for instance, is left
+          # exactly as the caller wrote it.
+          case "${version}" in
+          v[0-9]*) ;;
+          [0-9]*) version="v${version}" ;;
+          esac
+
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
       - name: Check that go.mod is tidied
         if: inputs.skip-go-mod-tidy == false
         run: go mod tidy -diff
 
       - name: Run Linter
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
-        if: success() || failure() # run this step even if the previous one failed
+        # NOTE(@azazeal): runs even if a previous step failed, so that a go.mod
+        # that is not tidied still gets linted. The version has to be checked on
+        # the way down though, as a failed resolve step would leave it empty,
+        # and the action expects a non-empty string.
+        if: (success() || failure()) && steps.version.outputs.version != ''
         with:
-          version: ${{ inputs.golangci-lint-version }}
+          version: ${{ steps.version.outputs.version }}
           args: "${{ steps.configure-linter.outputs.extra-args }} ${{ inputs.golangci-lint-args }}"
           verify: true
 
