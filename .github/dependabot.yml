@@ -7,7 +7,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       # group patch updates
       all:
-        update-types: [ patch, minor, major ]
+        update-types: [patch, minor, major]
