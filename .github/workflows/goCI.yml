@@ -43,7 +43,7 @@ on:
       golangci-lint-version:
         required: false
         type: string
-        default: latest
+        default: "" # empty means take it from .versions
       golangci-lint-args:
         required: false
         type: string
@@ -68,6 +68,10 @@ on:
         required: false
         type: string
         default: ""
+      govulncheck-version:
+        required: false
+        type: string
+        default: "" # empty means take it from .versions
       govulncheck-os-dependencies:
         required: false
         type: string
@@ -112,6 +116,10 @@ on:
         required: false
         type: boolean
         default: false
+      gotestsum-version:
+        required: false
+        type: string
+        default: "" # empty means take it from .versions
       test-command:
         required: false
         type: string
@@ -155,6 +163,7 @@ jobs:
       runs-on: ${{ inputs.govulncheck-runs-on || inputs.runs-on || 'ubuntu-latest' }}
       os-dependencies: ${{ inputs.govulncheck-os-dependencies || inputs.os-dependencies || '' }}
       goprivate: ${{ inputs.goprivate }}
+      version: ${{ inputs.govulncheck-version }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PAT: ${{ secrets.PAT }}
@@ -192,6 +201,7 @@ jobs:
       os-dependencies: ${{ inputs.test-os-dependencies || inputs.os-dependencies || '' }}
       run-codecov: ${{ inputs.run-codecov }}
       setup-bats: ${{ inputs.setup-bats }}
+      gotestsum-version: ${{ inputs.gotestsum-version }}
       test-command: ${{ inputs.test-command }}
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

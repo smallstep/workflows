@@ -1,0 +1,8 @@
+paths:
+  .github/workflows/*.yml:
+    ignore:
+      # NOTE(@azazeal): actionlint does not know the job.workflow_sha and
+      # job.workflow_repository properties that the reusable workflows here use
+      # to fetch .versions from their own commit. Tracked upstream in
+      # rhysd/actionlint#647; drop this once a release carries them.
+      - 'property "workflow_(sha|repository)" is not defined'

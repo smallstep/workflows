@@ -12,6 +12,10 @@ on:
         required: false
         type: string
         default: go.step.sm/,github.com/smallstep/
+      version:
+        required: false
+        type: string
+        default: "" # empty means take it from .versions
     secrets:
       SSH_PRIVATE_KEY:
         required: false
@@ -23,6 +27,7 @@ permissions:
 
 jobs:
   govulncheck:
+    name: Scan for vulnerabilities
     runs-on: ${{ inputs.runs-on }}
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
@@ -52,11 +57,13 @@ jobs:
               exit 1
               ;;
           esac
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Reconfigure Git for go.step.sm
         env:
           PAT: ${{ secrets.PAT }}
@@ -64,6 +71,7 @@ jobs:
         run: |
           git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf git+ssh://git@github.com
           git config --global url.git@github.com:.insteadOf https://github.com/
+
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -71,6 +79,7 @@ jobs:
           check-latest: true
           cache: true
           cache-dependency-path: "**/go.sum"
+
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         env:
@@ -79,7 +88,45 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Resolve the govulncheck version
+        id: version
+        shell: bash
+        env:
+          OVERRIDE: ${{ inputs.version }}
+          WORKFLOW_REPOSITORY: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+
+          # latest or "" means whatever's in .versions.
+          if [ -n "${OVERRIDE}" ] && [ "${OVERRIDE}" != latest ]; then
+            version="${OVERRIDE}"
+          else
+            versions="$(curl --fail --silent --show-error --location \
+              "https://raw.githubusercontent.com/${WORKFLOW_REPOSITORY}/${WORKFLOW_SHA}/.versions")"
+
+            version="$(printf '%s\n' "${versions}" | awk '$1 == "go:golang.org/x/vuln/cmd/govulncheck" { print $2 }')"
+            if [ -z "${version}" ]; then
+              echo "::error::.versions at ${WORKFLOW_SHA} carries no go:golang.org/x/vuln/cmd/govulncheck entry"
+              exit 1
+            fi
+          fi
+
+          # NOTE(@azazeal): a version may arrive with or without a leading v and
+          # the tools expect one; anything else, latest for instance, is left
+          # exactly as the caller wrote it.
+          case "${version}" in
+          v[0-9]*) ;;
+          [0-9]*) version="v${version}" ;;
+          esac
+
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        env:
+          GOVULNCHECK_VERSION: ${{ steps.version.outputs.version }}
+        run: go install "golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}"
+
       - name: Run govulncheck
         run: govulncheck ./...
