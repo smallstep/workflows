@@ -1,3 +1,3 @@
 module github.com/smallstep/workflows/lintapp
 
-go 1.23
+go 1.27
