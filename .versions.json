@@ -1,0 +1,38 @@
+{
+  "go": {
+    "$comment": "The latest Go that builds may consider. For this version to be present here, three things are true: 1) the golangci-lint version below can lint it, 2) actions/setup-go can install it, and 3) Docker Hub has published images for it.",
+    "url": "https://go.dev/doc/devel/release#go1.27.0",
+    "version": "1.27.0"
+  },
+  "go:golang.org/x/tools/cmd/goimports": {
+    "$comment": "The latest goimports that builds may consider.",
+    "url": "https://pkg.go.dev/golang.org/x/tools/cmd/goimports@v0.49.0",
+    "version": "0.49.0"
+  },
+  "go:golang.org/x/tools/gopls": {
+    "$comment": "The latest gopls that builds may consider.",
+    "url": "https://pkg.go.dev/golang.org/x/tools/gopls@v0.23.0",
+    "version": "0.23.0"
+  },
+  "go:golang.org/x/vuln/cmd/govulncheck": {
+    "$comment": "The latest govulncheck that builds may consider.",
+    "url": "https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck@v1.7.0",
+    "version": "1.7.0"
+  },
+  "golangci-lint": {
+    "$comment": "The latest golangci-lint release that builds may consider.",
+    "toolchain": "1.27.0",
+    "url": "https://github.com/golangci/golangci-lint/releases/tag/v2.13.1",
+    "version": "2.13.1"
+  },
+  "golangci-lint-langserver": {
+    "$comment": "The latest golangci-lint-langserver that builds may consider.",
+    "url": "https://pkg.go.dev/github.com/nametake/golangci-lint-langserver@v0.0.12",
+    "version": "0.0.12"
+  },
+  "gotestsum": {
+    "$comment": "The latest gotestsum that builds may consider.",
+    "url": "https://pkg.go.dev/gotest.tools/gotestsum@v1.13.0",
+    "version": "1.13.0"
+  }
+}

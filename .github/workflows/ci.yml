@@ -26,19 +26,116 @@ jobs:
       actions: read
       security-events: write
 
-  lint-dummy-app: # NOTE(@azazeal): this check is here to verify that .golangci.yml is valid
-    name: Lint dummy app
+  versions:
+    name: Validate .versions
     runs-on: ubuntu-latest
+    env:
+      MISE_MINIMUM_RELEASE_AGE: 0 # versions are pinned
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
+          persist-credentials: false
 
-      - name: Run Linter
+      - name: Read the pins
+        id: pins
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          while read -r key value; do
+            case "${key}" in
+              go)            echo "go=${value}" >> "${GITHUB_OUTPUT}" ;;
+              golangci-lint) echo "golangci_lint=${value}" >> "${GITHUB_OUTPUT}" ;;
+              gotestsum)     echo "gotestsum=${value}" >> "${GITHUB_OUTPUT}" ;;
+            esac
+          done < .versions
+
+      - name: Setup the pinned Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ steps.pins.outputs.go }}
+          check-latest: false
+
+      - name: Check .versions agrees with .versions.json
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp .versions "${RUNNER_TEMP}/versions.committed"
+          .github/scripts/generate-versions --no-refresh
+
+          if ! diff -u "${RUNNER_TEMP}/versions.committed" .versions; then
+            echo "::error::.versions is not what .versions.json flattens to; run .github/scripts/generate-versions"
+            exit 1
+          fi
+
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          install: false
+
+      # NOTE(@azazeal): .versions doubles as a .tool-versions, so we check
+      # whether mise can resolve
+      - name: Check mise resolves every pin
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          failed=0
+
+          while read -r key value; do
+            case "${key}" in
+              ''|\#*) continue ;;
+            esac
+
+            if [ "$(mise latest "${key}@${value}" 2>&1)" = "${value}" ]; then
+              echo "ok       ${key} ${value}"
+            else
+              echo "::error::mise cannot resolve ${key}@${value}"
+              failed=1
+            fi
+          done < .versions
+
+          exit "${failed}"
+
+      - name: Verify .golangci.yml against the pinned golangci-lint
+        shell: bash
+        env:
+          GOLANGCI_LINT: ${{ steps.pins.outputs.golangci_lint }}
+        run: |
+          set -euo pipefail
+
+          mise install "golangci-lint@${GOLANGCI_LINT}"
+          mise exec "golangci-lint@${GOLANGCI_LINT}" -- \
+            golangci-lint config verify --config=.golangci.yml
+
+      - name: Point the dummy app at the pinned Go
+        shell: bash
+        env:
+          GO_VERSION: ${{ steps.pins.outputs.go }}
+        run: |
+          set -euo pipefail
+
+          sed -i -E "s/^go .*/go ${GO_VERSION}/" lintapp/go.mod
+          cat lintapp/go.mod
+
+      - name: Lint the dummy app with the pinned golangci-lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           working-directory: lintapp
-          version: latest
+          version: v${{ steps.pins.outputs.golangci_lint }}
           verify: true
           args: --config=../.golangci.yml
+
+      - name: Test the dummy app with the pinned gotestsum
+        working-directory: lintapp
+        shell: bash
+        env:
+          GOTESTSUM: ${{ steps.pins.outputs.gotestsum }}
+        run: |
+          set -euo pipefail
+
+          mise install "gotestsum@${GOTESTSUM}"
+          mise exec "gotestsum@${GOTESTSUM}" -- gotestsum -- ./...

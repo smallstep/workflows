@@ -1,0 +1,174 @@
+name: Sync .versions
+
+on:
+  schedule:
+    - cron: '0 22 * * *' # Daily, 22:00 UTC, which is 15:00 in SF while DST is on
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+
+      - name: Regenerate .versions.json and .versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/generate-versions
+
+      - name: Look for changes
+        id: changes
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- .versions .versions.json; then
+            echo "found=false" >> "${GITHUB_OUTPUT}"
+            echo "already up to date"
+            exit 0
+          fi
+
+          echo "found=true" >> "${GITHUB_OUTPUT}"
+          git --no-pager diff -- .versions .versions.json
+
+      - name: Setup the SSH signing key
+        if: steps.changes.outputs.found == 'true'
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.STEP_TRAVIS_CI_GH_PRIVATE_SIGNING_KEY }}
+
+      - name: Open or update the pull request
+        if: steps.changes.outputs.found == 'true'
+        env:
+          BASE: ${{ github.event.repository.default_branch }}
+          BRANCH: ci/versions
+          GH_TOKEN: ${{ secrets.PAT }}
+          GIT_EMAIL: eng+ci@smallstep.com
+          GIT_NAME: step-ci
+          SIGNING_KEY: ${{ secrets.STEP_TRAVIS_CI_GH_PUBLIC_SIGNING_KEY }}
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+          set -euo pipefail
+
+          remote="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          if git ls-remote --exit-code --heads "${remote}" "${BRANCH}" >/dev/null 2>&1; then
+            git fetch --depth 1 "${remote}" "${BRANCH}"
+
+            author="$(git log -1 --format='%ae' FETCH_HEAD)"
+            if [ "${author}" != "${GIT_EMAIL}" ]; then
+              written_by="${BRANCH} was last written by ${author}"
+              echo "::error title=Sync versions::${written_by}; refusing to force push over it"
+              exit 1
+            fi
+
+            if git diff --quiet FETCH_HEAD -- .versions .versions.json; then
+              echo "${BRANCH} already carries these versions"
+              exit 0
+            fi
+          fi
+
+          old="$(mktemp)"
+          git show 'HEAD:.versions.json' > "${old}" 2>/dev/null || echo '{}' > "${old}"
+
+          # NOTE(@azazeal): $comment is left out of the comparison as rewording
+          # one is not a bump, and a run that only does that should not be
+          # treated like a dependency bump. url is not left out, as it not only
+          # carries the version, but denotes the origin too.
+          changed="$(jq -r --slurpfile old "${old}" '
+            ($old[0] // {}) as $was
+            | to_entries
+            | map(select(
+                  (.value | del(.["$comment"]))
+                  != (($was[.key] // {}) | del(.["$comment"]))
+              ))
+            | .[]
+            | [.key, .value.version, .value.url]
+            | @tsv
+          ' .versions.json)"
+
+          # shellcheck disable=SC2016
+          bump() { printf '%s `%s` to [`%s`](%s).\n' "$1" "$2" "$3" "$4"; }
+
+          body="$(mktemp)"
+          summary=""
+
+          while IFS=$'\t' read -r name version url; do
+            [ -n "${name}" ] || continue
+
+            if [ -z "${summary}" ]; then
+              summary="${name} to ${version}"
+              bump "This PR bumps" "${name}" "${version}" "${url}" > "${body}"
+            else
+              summary="${summary}, ${name} to ${version}"
+              { echo; bump "It also bumps" "${name}" "${version}" "${url}"; } >> "${body}"
+            fi
+          done <<< "${changed}"
+
+          if [ -n "${summary}" ]; then
+            title=".versions: bumped ${summary}"
+
+            cat >> "${body}" <<'CAVEAT'
+
+          _The updates suggested here have not been reviewed for any security issues._
+          CAVEAT
+          else
+            title=".versions: regenerated"
+            cat > "${body}" <<'FALLBACK'
+          This PR regenerates `.versions` from `.versions.json`.
+          FALLBACK
+          fi
+
+          git config user.name "${GIT_NAME}"
+          git config user.email "${GIT_EMAIL}"
+          git config user.signingkey "${SIGNING_KEY}"
+          git config commit.gpgsign true
+          git config gpg.format ssh
+
+          git switch --create "${BRANCH}"
+          git add .versions .versions.json
+          git commit --message "${title}"
+          git push --force "${remote}" "${BRANCH}"
+
+          state="$(gh pr view "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+            --json state --jq '.state' 2>/dev/null || true)"
+
+          if [ "${state}" = "OPEN" ]; then
+            # versions moved on, so the title and body have to move with
+            # them; otherwise the pull request still advertises the older bump.
+            gh pr edit "${BRANCH}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "${title}" \
+              --body-file "${body}"
+
+            echo "updated the pull request that was already open for ${BRANCH}"
+          else
+            gh pr create \
+              --repo "${GITHUB_REPOSITORY}" \
+              --base "${BASE}" \
+              --head "${BRANCH}" \
+              --title "${title}" \
+              --body-file "${body}"
+          fi
+
+          # if there's no version bump then the PR doesn't get a "dependencies"
+          # label.
+          if [ -n "${summary}" ]; then
+            gh pr edit "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+              --add-label dependencies
+          else
+            gh pr edit "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+              --remove-label dependencies || true
+          fi

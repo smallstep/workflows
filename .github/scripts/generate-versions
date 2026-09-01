@@ -1,0 +1,486 @@
+#!/bin/sh
+#
+# Regenerates the .versions file.
+#
+# The .versions file is a key value flat text file. Keys are separated from
+# values by a single space character, e.g.
+#
+# go 1.27.0
+# golangci-lint 2.13.2
+# go:golang.org/x/vuln/cmd/govulncheck 1.7.0
+#
+# That is asdf's .tool-versions format, so symlinking this file as one lets
+# mise install exactly what it names. The file aims to be compatible with
+# mise, so a key has to be something mise resolves, i.e. a name from its
+# registry or a backend and a module path, along with a value carrying no
+# leading 'v'.
+#
+# Some further notes:
+#
+# 1. golangci-lint is consumed as a published binary, because building it from
+#    source ends up breaking every other week. Its version therefore comes
+#    from its GitHub releases page and not from its git tags, since a tag can
+#    exist before its assets finish uploading.
+#
+# 2. go moves only when a) golangci-lint can lint it, b) actions/setup-go can
+#    install it, and c) Docker Hub has images for it.
+#
+# 3. Versions are considered once they've been out for at least COOLDOWN_DAYS,
+#    so a release that turns out to be broken has some time to be pulled or
+#    fixed.
+#
+# With --no-refresh nothing upstream is consulted and .versions is rebuilt from
+# the .versions.json already on disk, which is how CI checks the two agree
+# without failing every time a release lands mid-review.
+#
+# Requires: gh (authenticated), jq, curl, tar and go.
+
+set -eu
+
+readonly GOLANGCI_LINT_REPOSITORY=golangci/golangci-lint
+
+# Only consider releases that have been out for this many days.
+COOLDOWN_DAYS="${COOLDOWN_DAYS:-7}"
+
+refresh=yes
+case "${1:-}" in
+--no-refresh) refresh=no ;;
+"") ;;
+*)
+    echo "usage: $(basename -- "$0") [--no-refresh]" >&2
+    exit 2
+    ;;
+esac
+
+root="$(cd -- "$(dirname -- "$0")/../.." && pwd)"
+
+releases="${VERSIONS_JSON:-${root}/.versions.json}"
+out="${VERSIONS:-${root}/.versions}"
+
+work="$(mktemp -d)"
+trap 'rm -rf "${work}"' EXIT
+
+[ -f "${releases}" ] || echo '{}' >"${releases}"
+
+# put <name> <object> replaces one entry of .versions.json, keeping the others.
+put() {
+    jq --arg name "$1" --argjson object "$2" \
+        '.[$name] = $object' "${releases}" >"${work}/merged.json"
+    mv -- "${work}/merged.json" "${releases}"
+}
+
+# settled <timestamp> reports whether an ISO 8601 timestamp is far enough in
+# the past to have cleared the cooldown.
+settled() {
+    jq --exit-status --null-input \
+        --arg when "$1" --argjson days "${COOLDOWN_DAYS}" \
+        '(now - ($when | fromdateiso8601)) >= ($days * 86400)' >/dev/null
+}
+
+# tagged <repository> <tag> reports when a git tag was laid down, ISO 8601. Go
+# publishes no GitHub releases, so its dates come from the tags themselves.
+tagged() {
+    tagged_ref="$(gh api "repos/$1/git/refs/tags/$2")"
+    tagged_type="$(printf '%s' "${tagged_ref}" | jq -r '.object.type')"
+    tagged_sha="$(printf '%s' "${tagged_ref}" | jq -r '.object.sha')"
+
+    if [ "${tagged_type}" = tag ]; then
+        gh api "repos/$1/git/tags/${tagged_sha}" --jq '.tagger.date'
+    else
+        gh api "repos/$1/git/commits/${tagged_sha}" --jq '.committer.date'
+    fi
+}
+
+# at_most <a> <b> reports whether Go version a sits at or below b. Only the
+# major and the minor are compared: golangci-lint weighs language versions, so
+# a 1.27.0 build happily lints a module that asks for 1.27.9, and comparing
+# patches would strand us on old ones.
+at_most() {
+    jq --exit-status --null-input --arg a "$1" --arg b "$2" '
+        def parts: split(".") | map(tonumber) | .[0:2];
+        ($a | parts) <= ($b | parts)
+    ' >/dev/null
+}
+
+# verify <archive> <checksums> checks one file against a checksums document
+# that covers every asset of a release.
+verify() {
+    verify_name="$(basename -- "$1")"
+
+    (
+        cd -- "$(dirname -- "$1")" || exit
+
+        grep -- " ${verify_name}\$" "$2" >"${verify_name}.sha256"
+
+        if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum --check --status "${verify_name}.sha256"
+        else
+            shasum --algorithm 256 --check --status "${verify_name}.sha256"
+        fi
+    )
+}
+
+# update_releases refreshes every entry of .versions.json from upstream.
+update_releases() {
+    # --- golangci-lint
+
+    gh api "repos/${GOLANGCI_LINT_REPOSITORY}/releases" >"${work}/golangci-lint.json"
+
+    # Match assets by suffix instead of building their names out of the tag:
+    # upstream drops the leading v, and that is a convention we would rather not
+    # encode here.
+    asset_url() {
+        jq -r --arg tag "$1" --arg suffix "$2" '
+            .[]
+            | select(.tag_name == $tag)
+            | .assets[]
+            | select(.name | endswith($suffix))
+            | .browser_download_url
+        ' "${work}/golangci-lint.json"
+    }
+
+    # Every release worth considering, newest first. Drafts and prereleases are
+    # ignored.
+    #
+    # The list goes to a file rather than into a pipeline, so that the loop
+    # below runs in this shell and the version it settles on outlives it.
+    jq -r --argjson days "${COOLDOWN_DAYS}" '
+        map(select((.draft | not) and (.prerelease | not)))
+        | sort_by(.published_at)
+        | reverse
+        | .[]
+        | .tag_name + " "
+          + ((now - (.published_at | fromdateiso8601) >= $days * 86400) | tostring)
+    ' "${work}/golangci-lint.json" >"${work}/golangci-lint-tags"
+
+    version=""
+
+    while read -r candidate ready; do
+        [ -n "${candidate}" ] || continue
+
+        if [ "${ready}" != true ]; then
+            echo "golangci-lint ${candidate} is out, but inside the ${COOLDOWN_DAYS} day cooldown" >&2
+            continue
+        fi
+
+        archive_url="$(asset_url "${candidate}" -linux-amd64.tar.gz)"
+        checksums_url="$(asset_url "${candidate}" -checksums.txt)"
+
+        if [ -z "${archive_url}" ] || [ -z "${checksums_url}" ]; then
+            echo "golangci-lint ${candidate} has no linux-amd64 archive or checksums" >&2
+            continue
+        fi
+
+        version="${candidate}"
+        break
+    done <"${work}/golangci-lint-tags"
+
+    if [ -z "${version}" ]; then
+        echo "no golangci-lint release is usable; keeping the entry as it is" >&2
+    else
+        archive="${work}/$(basename -- "${archive_url}")"
+
+        curl --fail --silent --show-error --location --output "${archive}" "${archive_url}"
+        curl --fail --silent --show-error --location --output "${work}/checksums.txt" "${checksums_url}"
+
+        verify "${archive}" "${work}/checksums.txt"
+
+        tar -xzf "${archive}" -C "${work}"
+
+        binary="$(find "${work}" -type f -name golangci-lint | awk 'NR == 1 { print }')"
+        if [ -z "${binary}" ]; then
+            echo "golangci-lint ${version} ships no linux-amd64 binary" >&2
+            exit 1
+        fi
+
+        # golangci-lint compares the Go version it was built with against the go
+        # directive of the module it is pointed at, and refuses to run when the
+        # directive is the newer of the two. The binary is the only place that
+        # build version is recorded: the go directive in golangci-lint's own
+        # go.mod is the oldest Go it builds with, not the one it shipped with.
+        gotoolchain="$(go version -m "${binary}" | awk 'NR == 1 { print $NF }')"
+        case "${gotoolchain}" in
+        go[0-9]*) ;;
+        *)
+            echo "golangci-lint ${version} reports an odd build version: ${gotoolchain}" >&2
+            exit 1
+            ;;
+        esac
+
+        # Build versions read as go1.27.0; every value here reads as 1.27.0.
+        toolchain="${gotoolchain#go}"
+
+        put golangci-lint "$(jq --null-input \
+            --arg version "${version#v}" \
+            --arg toolchain "${toolchain}" \
+            --arg url "https://github.com/${GOLANGCI_LINT_REPOSITORY}/releases/tag/${version}" \
+            '{
+                "$comment": "The latest golangci-lint release that builds may "
+                    + "consider.",
+                url: $url,
+                version: $version,
+                toolchain: $toolchain
+            }')"
+
+        echo "golangci-lint ${version}, built with ${gotoolchain}" >&2
+    fi
+
+    # --- go
+
+    # What golangci-lint can lint is the ceiling. Bumping Go past it would leave
+    # every repository that follows this file unable to lint.
+    ceiling="$(jq -r '.["golangci-lint"].toolchain // empty' "${releases}")"
+
+    if [ -z "${ceiling}" ]; then
+        echo "there is no golangci-lint entry to bound Go by; keeping the entry as it is" >&2
+    else
+        # include=all reaches back past the newest patch of each minor, so that
+        # a patch which fails one of the checks below can fall back to the one
+        # before it rather than to a whole minor earlier.
+        curl --fail --silent --show-error --location --output "${work}/go-releases.json" \
+            'https://go.dev/dl/?mode=json&include=all'
+        curl --fail --silent --show-error --location --output "${work}/go-versions.json" \
+            https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json
+
+        # The newest stable releases, newest first. Capped, because each one
+        # that gets this far costs a call to Docker Hub and anything further
+        # back spans several minors and is of no use to anybody.
+        jq -r '
+            def parts: split(".") | map(tonumber);
+            map(select(.stable) | .version | ltrimstr("go"))
+            | sort_by(parts)
+            | reverse
+            | .[0:40]
+            | .[]
+        ' "${work}/go-releases.json" >"${work}/go-candidates"
+
+        # Anything the ceiling rules out sits at the top of that list, so naming
+        # the first one is enough to explain the whole run.
+        read -r newest <"${work}/go-candidates" || newest=""
+        if [ -n "${newest}" ] && ! at_most "${newest}" "${ceiling}"; then
+            echo "go ${newest} is out, but golangci-lint tops out at ${ceiling}" >&2
+        fi
+
+        selected=""
+
+        while read -r candidate; do
+            [ -n "${candidate}" ] || continue
+
+            at_most "${candidate}" "${ceiling}" || continue
+
+            if ! jq --exit-status --arg version "${candidate}" \
+                'any(.[]; .version == $version)' "${work}/go-versions.json" >/dev/null; then
+                echo "go ${candidate} is out, but actions/setup-go cannot install it yet" >&2
+                continue
+            fi
+
+            if ! curl --fail --silent --location --output /dev/null \
+                "https://hub.docker.com/v2/repositories/library/golang/tags/${candidate}"; then
+                echo "go ${candidate} is out, but Docker Hub has no golang:${candidate} yet" >&2
+                continue
+            fi
+
+            cut="$(tagged golang/go "go${candidate}")"
+            if ! settled "${cut}"; then
+                echo "go ${candidate} came out on ${cut%%T*}, inside the ${COOLDOWN_DAYS} day cooldown" >&2
+                continue
+            fi
+
+            selected="${candidate}"
+            break
+        done <"${work}/go-candidates"
+
+        if [ -z "${selected}" ]; then
+            kept="$(jq -r '.go.version // empty' "${releases}")"
+
+            # Keeping the entry is only safe while it still sits under the
+            # ceiling. A kept version above it would have everybody declare a go
+            # directive that golangci-lint cannot lint.
+            if [ -n "${kept}" ] && ! at_most "${kept}" "${ceiling}"; then
+                trouble="no Go release clears every check, and the stored ${kept}"
+                echo "::error::${trouble} is past what golangci-lint can lint" >&2
+                exit 1
+            fi
+
+            echo "no Go release clears every check yet; keeping the entry as it is" >&2
+        else
+            put go "$(jq --null-input \
+                --arg version "${selected}" \
+                --arg url "https://go.dev/doc/devel/release#go${selected}" \
+                '{
+                    "$comment": "The latest Go that builds may consider. For "
+                        + "this version to be present here, three things are "
+                        + "true: 1) the golangci-lint version below can lint "
+                        + "it, 2) actions/setup-go can install it, and 3) "
+                        + "Docker Hub has published images for it.",
+                    url: $url,
+                    version: $version
+                }')"
+
+            echo "go ${selected}" >&2
+        fi
+    fi
+
+    # --- the rest of the toolchain
+
+    # None of these gate a Go bump. gotestsum and golangci-lint-langserver shell
+    # out to the thing that does the reading, go test and golangci-lint, and
+    # never look at your source themselves. The rest are compiled by whatever Go
+    # runs them, so they follow it on their own. They are here to be pinned,
+    # nothing more.
+
+    # proxy_version <module> reports the newest version the Go module proxy
+    # holds that has cleared the cooldown, without the leading v.
+    #
+    # The proxy's list arrives unsorted and salted with prereleases, so it is
+    # filtered to plain releases and ordered here. Each candidate then costs one
+    # more call for its date, which stops at the first that has settled.
+    #
+    # The paths below are lowercase; one with capitals would need the proxy's !
+    # escaping and would 404 loudly instead.
+    proxy_version() {
+        curl --fail --silent --show-error --location \
+            "https://proxy.golang.org/$1/@v/list" |
+            jq -Rsr 'split("\n")
+                | map(select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")))
+                | map({v: ., p: (ltrimstr("v") | split(".") | map(tonumber))})
+                | sort_by(.p)
+                | reverse
+                | .[].v' >"${work}/proxy-versions"
+
+        while read -r proxy_candidate; do
+            [ -n "${proxy_candidate}" ] || continue
+
+            proxy_when="$(curl --fail --silent --show-error --location \
+                "https://proxy.golang.org/$1/@v/${proxy_candidate}.info" |
+                jq -r '.Time')"
+
+            if settled "${proxy_when}"; then
+                printf '%s\n' "${proxy_candidate#v}"
+                return 0
+            fi
+
+            echo "$1 ${proxy_candidate} is out, but inside the ${COOLDOWN_DAYS} day cooldown" >&2
+        done <"${work}/proxy-versions"
+
+        echo "no release of $1 has cleared the cooldown" >&2
+        return 1
+    }
+
+    # pin <key> <module> <package> records a tool whose only interesting fact is
+    # its version, taking its comment on stdin. The key is what mise resolves it
+    # by.
+    #
+    # No ceiling applies to any of them. What can apply is a floor: one built
+    # from source whose module asks for a newer Go than the go key would quietly
+    # have the toolchain fetch a different one.
+    pin() {
+        # Flattened to one line, because a comment reaches .versions as one
+        # record.
+        pin_comment="$(tr '\n' ' ' | sed -e 's/  */ /g' -e 's/ *$//')"
+
+        pin_version="$(proxy_version "$2")"
+
+        pin_needs="$(curl --fail --silent --show-error --location \
+            "https://proxy.golang.org/$2/@v/v${pin_version}.mod" |
+            awk '/^go /{ print $2 }')"
+
+        if [ -n "${goversion}" ] && [ -n "${pin_needs}" ] &&
+            ! at_most "${pin_needs}" "${goversion}"; then
+            echo "::error::$1 ${pin_version} needs Go ${pin_needs}, past the go key ${goversion}" >&2
+            exit 1
+        fi
+
+        put "$1" "$(jq --null-input \
+            --arg version "${pin_version}" \
+            --arg url "https://pkg.go.dev/$3@v${pin_version}" \
+            --arg comment "${pin_comment}" \
+            '{"$comment": $comment, url: $url, version: $version}')"
+
+        echo "$1 ${pin_version}" >&2
+    }
+
+    # Whatever the go section settled on, which is the floor every pin is held
+    # to.
+    goversion="$(jq -r '.go.version // empty' "${releases}")"
+
+    pin gotestsum gotest.tools/gotestsum gotest.tools/gotestsum <<'COMMENT'
+The latest gotestsum that builds may consider.
+COMMENT
+
+    pin go:golang.org/x/vuln/cmd/govulncheck golang.org/x/vuln \
+        golang.org/x/vuln/cmd/govulncheck <<'COMMENT'
+The latest govulncheck that builds may consider.
+COMMENT
+
+    pin go:golang.org/x/tools/cmd/goimports golang.org/x/tools \
+        golang.org/x/tools/cmd/goimports <<'COMMENT'
+The latest goimports that builds may consider.
+COMMENT
+
+    pin go:golang.org/x/tools/gopls golang.org/x/tools/gopls \
+        golang.org/x/tools/gopls <<'COMMENT'
+The latest gopls that builds may consider.
+COMMENT
+
+    pin golangci-lint-langserver github.com/nametake/golangci-lint-langserver \
+        github.com/nametake/golangci-lint-langserver <<'COMMENT'
+The latest golangci-lint-langserver that builds may consider.
+COMMENT
+}
+
+[ "${refresh}" = no ] || update_releases
+
+# --- .versions.json
+
+# jq rewrites the file on every merge above, so sort it once here and leave it
+# formatted the way a review wants to read it.
+jq --sort-keys '.' "${releases}" >"${work}/sorted.json"
+mv -- "${work}/sorted.json" "${releases}"
+
+# --- .versions
+
+# A line protocol, rendered below: B starts an entry, C carries prose to wrap
+# and comment out, K carries a finished key and value. The kind is one
+# character and a space, so read splits it off without an IFS of its own.
+#
+# A tool's version is keyed by the tool's own name, and every other field it
+# holds is keyed by the tool's name and the field's. $comment, url and
+# toolchain are not published: the first two describe the entry, and the third
+# is what bounds the go decision above rather than anything a reader acts on.
+jq -r '
+    to_entries
+    | sort_by(.key)
+    | .[]
+    | .key as $tool
+    | [ "B" ]
+      + (if .value["$comment"] then [ "C " + .value["$comment"] ] else [] end)
+      + (
+            .value
+            | del(.["$comment"], .url, .toolchain)
+            | to_entries
+            | map({
+                  key: (if .key == "version" then $tool else $tool + "-" + .key end),
+                  value: .value
+              })
+            | sort_by(.key)
+            | map("K " + .key + " " + (.value | tostring))
+        )
+    | .[]
+' "${releases}" >"${work}/lines"
+
+{
+    cat <<'HEADER'
+# Code generated by .github/workflows/versions.yml; DO NOT EDIT.
+HEADER
+
+    while read -r kind text; do
+        case "${kind}" in
+        B) echo ;;
+        C) printf '%s\n' "${text}" | fold -s -w 78 | sed -e 's/[[:space:]]*$//' -e 's/^/# /' ;;
+        K) printf '%s\n' "${text}" ;;
+        esac
+    done <"${work}/lines"
+} >"${out}"
+
+echo "wrote ${out}" >&2
