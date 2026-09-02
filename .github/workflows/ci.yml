@@ -26,8 +26,8 @@ jobs:
       actions: read
       security-events: write
 
-  versions:
-    name: Validate .versions
+  test-pinned-versions:
+    name: Test pinned version files
     runs-on: ubuntu-latest
     env:
       MISE_MINIMUM_RELEASE_AGE: 0 # versions are pinned
@@ -35,22 +35,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          submodules: true
+          submodules: recursive
           persist-credentials: false
 
+      # The rest of this job takes its versions from the action, the way a
+      # caller does. Whether the action reports the right ones is the versions
+      # action job's business.
       - name: Read the pins
         id: pins
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          while read -r key value; do
-            case "${key}" in
-              go)            echo "go=${value}" >> "${GITHUB_OUTPUT}" ;;
-              golangci-lint) echo "golangci_lint=${value}" >> "${GITHUB_OUTPUT}" ;;
-              gotestsum)     echo "gotestsum=${value}" >> "${GITHUB_OUTPUT}" ;;
-            esac
-          done < .versions
+        uses: ./.github/actions/versions
 
       - name: Setup the pinned Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -103,7 +96,7 @@ jobs:
       - name: Verify .golangci.yml against the pinned golangci-lint
         shell: bash
         env:
-          GOLANGCI_LINT: ${{ steps.pins.outputs.golangci_lint }}
+          GOLANGCI_LINT: ${{ steps.pins.outputs['golangci-lint'] }}
         run: |
           set -euo pipefail
 
@@ -125,7 +118,7 @@ jobs:
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           working-directory: lintapp
-          version: v${{ steps.pins.outputs.golangci_lint }}
+          version: v${{ steps.pins.outputs['golangci-lint'] }}
           verify: true
           args: --config=../.golangci.yml
 
@@ -139,3 +132,53 @@ jobs:
 
           mise install "gotestsum@${GOTESTSUM}"
           mise exec "gotestsum@${GOTESTSUM}" -- gotestsum -- ./...
+
+  test-pinned-versions-action:
+    name: Validate the versions action on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Determine the pinned tool versions
+        id: pins
+        uses: ./.github/actions/versions
+
+      - name: Check the pinned tool versions
+        shell: bash
+        env:
+          OUTPUTS: ${{ toJSON(steps.pins.outputs) }}
+        run: |
+          set -euo pipefail
+
+          # NOTE(@azazeal): the jq on a Windows runner is a native build, so it
+          # writes CRLF while the awk next to it writes LF. Every list loses
+          # its \r before it is compared, or the three never match there.
+          pinned="$(awk '!/^#/ && NF { sub("^go:", "", $1); print $1, $2 }' \
+            .versions | tr -d '\r' | sort)"
+
+          reported="$(printf '%s' "${OUTPUTS}" |
+            jq -r 'del(.__json) | to_entries[] | "\(.key) \(.value)"' |
+            tr -d '\r' | sort)"
+
+          resolved="$(printf '%s' "${OUTPUTS}" |
+            jq -r '.__json | fromjson | to_entries[] | "\(.key) \(.value)"' |
+            tr -d '\r' | sort)"
+
+          if [ "${pinned}" != "${reported}" ] ||
+            [ "${pinned}" != "${resolved}" ]; then
+            printf '.versions holds:\n%s\n\nthe outputs hold:\n%s\n\n__json holds:\n%s\n' \
+              "${pinned}" "${reported}" "${resolved}"
+            echo "::error::the action does not report what .versions holds"
+            exit 1
+          fi
