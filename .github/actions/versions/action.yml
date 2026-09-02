@@ -1,0 +1,72 @@
+name: Determine pinned tool versions
+description: >-
+  Reports the versions pinned in .versions, one output per tool, so that every
+  repository builds with the same toolchain. No version carries a leading v.
+
+outputs:
+  __json:
+    description: >-
+      All pinned versions, in a JSON object, mapping key to version.
+    value: ${{ steps.determine.outputs.__json }}
+
+  go:
+    description: The pinned Go version
+    value: ${{ steps.determine.outputs.go }}
+
+  golangci-lint:
+    description: The pinned golangci-lint version
+    value: ${{ steps.determine.outputs['golangci-lint'] }}
+
+  golangci-lint-langserver:
+    description: The pinned golangci-lint-langserver version
+    value: ${{ steps.determine.outputs['golangci-lint-langserver'] }}
+
+  gotestsum:
+    description: The pinned gotestsum version
+    value: ${{ steps.determine.outputs.gotestsum }}
+
+  golang.org/x/tools/cmd/goimports:
+    description: The pinned goimports version
+    value: ${{ steps.determine.outputs['golang.org/x/tools/cmd/goimports'] }}
+
+  golang.org/x/tools/gopls:
+    description: The pinned gopls version
+    value: ${{ steps.determine.outputs['golang.org/x/tools/gopls'] }}
+
+  golang.org/x/vuln/cmd/govulncheck:
+    description: The pinned govulncheck version
+    value: ${{ steps.determine.outputs['golang.org/x/vuln/cmd/govulncheck'] }}
+
+runs:
+  using: composite
+  steps:
+    - name: Determine
+      id: determine
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        root="$(cd -- "${GITHUB_ACTION_PATH}/../../.." && pwd)"
+        json=""
+
+        echo "::group::Pinned tool versions"
+
+        while read -r key value; do
+          # skip blank lines & comments
+          case "${key}" in
+            '' | \#*) continue ;;
+          esac
+
+          # strip any go: prefix
+          name="${key#go:}"
+
+          echo "${name}=${value}" >> "${GITHUB_OUTPUT}"
+          echo "${name}: ${value}"
+
+          json="${json}${json:+,}\"${name}\":\"${value}\""
+        done < "${root}/.versions"
+
+        echo "::endgroup::"
+
+        # also export the JSON object, mapping key => version.
+        echo "__json={${json}}" >> "${GITHUB_OUTPUT}"
