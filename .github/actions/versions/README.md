@@ -36,8 +36,8 @@ An output is named by its key in `.versions`, less any `go:` prefix.
 | `golang.org/x/tools/cmd/goimports`  | The `goimports` release.                            |
 | `golang.org/x/tools/gopls`          | The `gopls` release.                                |
 | `golang.org/x/vuln/cmd/govulncheck` | The `govulncheck` release to scan with.             |
-| `github.com/air-verse/air`          | The `air` release the dev flows reload with.        |
-| `mirrord`                           | The `mirrord` release the dev flows steal traffic with. |
+| `github.com/air-verse/air`          | The `air` release.                                  |
+| `mirrord`                           | The `mirrord` release.                              |
 
 The reported versions carry no leading `v`, e.g. `1.0.0` instead of `v1.0.0`,
 which means that, depending where you want to pass the literal to, you may have

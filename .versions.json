@@ -5,7 +5,7 @@
     "version": "1.27.0"
   },
   "go:github.com/air-verse/air": {
-    "$comment": "The latest air (live reload for Go services) that the dev flows may consider.",
+    "$comment": "The latest air that may be considered.",
     "url": "https://pkg.go.dev/github.com/air-verse/air@v1.67.4",
     "version": "1.67.4"
   },
@@ -41,7 +41,7 @@
     "version": "1.13.0"
   },
   "mirrord": {
-    "$comment": "The latest mirrord (the local-process dev flow steals a pod's traffic through it) that the dev flows may consider.",
+    "$comment": "The latest mirrord that may be considered.",
     "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.251.0",
     "version": "3.251.0"
   }

@@ -430,7 +430,7 @@ COMMENT
 
     pin go:github.com/air-verse/air github.com/air-verse/air \
         github.com/air-verse/air <<'COMMENT'
-The latest air (live reload for Go services) that the dev flows may consider.
+The latest air that may be considered.
 COMMENT
 
     # pin_release <key> <repository> records a tool that ships as a published
@@ -465,8 +465,7 @@ COMMENT
     }
 
     pin_release mirrord metalbear-co/mirrord <<'COMMENT'
-The latest mirrord (the local-process dev flow steals a pod's traffic
-through it) that the dev flows may consider.
+The latest mirrord that may be considered.
 COMMENT
 }
 
