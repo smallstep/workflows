@@ -4,6 +4,11 @@
     "url": "https://go.dev/doc/devel/release#go1.27.0",
     "version": "1.27.0"
   },
+  "go:github.com/air-verse/air": {
+    "$comment": "The latest air (live reload for Go services) that the dev flows may consider.",
+    "url": "https://pkg.go.dev/github.com/air-verse/air@v1.67.4",
+    "version": "1.67.4"
+  },
   "go:golang.org/x/tools/cmd/goimports": {
     "$comment": "The latest goimports that builds may consider.",
     "url": "https://pkg.go.dev/golang.org/x/tools/cmd/goimports@v0.49.0",
@@ -34,5 +39,10 @@
     "$comment": "The latest gotestsum that builds may consider.",
     "url": "https://pkg.go.dev/gotest.tools/gotestsum@v1.13.0",
     "version": "1.13.0"
+  },
+  "mirrord": {
+    "$comment": "The latest mirrord (the local-process dev flow steals a pod's traffic through it) that the dev flows may consider.",
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.251.0",
+    "version": "3.251.0"
   }
 }

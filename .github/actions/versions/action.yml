@@ -37,6 +37,14 @@ outputs:
     description: The pinned govulncheck version
     value: ${{ steps.determine.outputs['golang.org/x/vuln/cmd/govulncheck'] }}
 
+  github.com/air-verse/air:
+    description: The pinned air version
+    value: ${{ steps.determine.outputs['github.com/air-verse/air'] }}
+
+  mirrord:
+    description: The pinned mirrord version
+    value: ${{ steps.determine.outputs.mirrord }}
+
 runs:
   using: composite
   steps:
