@@ -69,6 +69,12 @@ jobs:
             exit 1
           fi
 
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          minimum_release_age: 7d
+          install: false
+
       - name: Check the shared Taskfile parses and lists its tasks
         shell: bash
         run: |
@@ -76,12 +82,6 @@ jobs:
           mise install task@3.53.1
           mise exec task@3.53.1 -- task --list-all
           mise exec task@3.53.1 -- task pins
-
-      - name: Setup mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        with:
-          minimum_release_age: 7d
-          install: false
 
       # NOTE(@azazeal): .versions doubles as a .tool-versions, so we check
       # whether mise can resolve
