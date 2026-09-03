@@ -524,3 +524,35 @@ HEADER
 } >"${out}"
 
 echo "wrote ${out}" >&2
+
+# --- Taskfile.yml
+
+# The shared Taskfile bakes the pins into its vars block, so a repository that
+# includes it needs no second download. A key becomes a var name by dropping
+# any go: prefix and the module path, keeping the last segment upper-cased with
+# dashes as underscores: go:golang.org/x/tools/cmd/goimports is GOIMPORTS,
+# golangci-lint is GOLANGCI_LINT. Only the block between the markers is
+# rewritten; the rest of the file is hand-written.
+taskfile="${TASKFILE:-${root}/Taskfile.yml}"
+
+jq -r '
+    to_entries
+    | sort_by(.key)
+    | .[]
+    | (.key | sub("^go:"; "") | split("/") | .[-1] | ascii_upcase | gsub("-"; "_")) as $name
+    | "  \($name): \(.value.version)"
+' "${releases}" >"${work}/taskvars"
+
+awk -v vars="${work}/taskvars" '
+    /# BEGIN generated/ {
+        print
+        while ((getline line < vars) > 0) print line
+        skipping = 1
+        next
+    }
+    /# END generated/ { skipping = 0 }
+    !skipping { print }
+' "${taskfile}" >"${work}/Taskfile.yml"
+mv -- "${work}/Taskfile.yml" "${taskfile}"
+
+echo "wrote ${taskfile}" >&2

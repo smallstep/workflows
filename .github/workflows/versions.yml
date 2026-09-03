@@ -34,14 +34,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          if git diff --quiet -- .versions .versions.json; then
+          if git diff --quiet -- .versions .versions.json Taskfile.yml; then
             echo "found=false" >> "${GITHUB_OUTPUT}"
             echo "already up to date"
             exit 0
           fi
 
           echo "found=true" >> "${GITHUB_OUTPUT}"
-          git --no-pager diff -- .versions .versions.json
+          git --no-pager diff -- .versions .versions.json Taskfile.yml
 
       - name: Setup the SSH signing key
         if: steps.changes.outputs.found == 'true'
@@ -74,7 +74,7 @@ jobs:
               exit 1
             fi
 
-            if git diff --quiet FETCH_HEAD -- .versions .versions.json; then
+            if git diff --quiet FETCH_HEAD -- .versions .versions.json Taskfile.yml; then
               echo "${BRANCH} already carries these versions"
               exit 0
             fi
@@ -138,7 +138,7 @@ jobs:
           git config gpg.format ssh
 
           git switch --create "${BRANCH}"
-          git add .versions .versions.json
+          git add .versions .versions.json Taskfile.yml
           git commit --message "${title}"
           git push --force "${remote}" "${BRANCH}"
 
