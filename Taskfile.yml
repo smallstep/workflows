@@ -53,6 +53,8 @@ tasks:
       - echo "goimports     {{.GOIMPORTS}}"
       - echo "gotestsum     {{.GOTESTSUM}}"
       - echo "govulncheck   {{.GOVULNCHECK}}"
+      - echo "air           {{.AIR}}"
+      - echo "mirrord       {{.MIRRORD}}"
 
   check:
     desc: say which tools on PATH are not the versions smallstep pins
