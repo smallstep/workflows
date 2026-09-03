@@ -427,6 +427,46 @@ COMMENT
         github.com/nametake/golangci-lint-langserver <<'COMMENT'
 The latest golangci-lint-langserver that builds may consider.
 COMMENT
+
+    pin go:github.com/air-verse/air github.com/air-verse/air \
+        github.com/air-verse/air <<'COMMENT'
+The latest air that may be considered.
+COMMENT
+
+    # pin_release <key> <repository> records a tool that ships as a published
+    # binary from its GitHub releases, taking its comment on stdin: the newest
+    # release that is neither a draft nor a prerelease and has cleared the
+    # cooldown. The key is what mise resolves it by; its registry follows the
+    # same releases, as does the tool's Homebrew tap. The version carries no
+    # leading v.
+    pin_release() {
+        pin_comment="$(tr '\n' ' ' | sed -e 's/  */ /g' -e 's/ *$//')"
+
+        pin_tag="$(gh api "repos/$2/releases?per_page=40" | jq -r --argjson days "${COOLDOWN_DAYS}" '
+            map(select((.draft | not) and (.prerelease | not)
+                and (now - (.published_at | fromdateiso8601) >= $days * 86400)))
+            | sort_by(.published_at)
+            | reverse
+            | .[0].tag_name // empty
+        ')"
+
+        if [ -z "${pin_tag}" ]; then
+            echo "no release of $2 has cleared the cooldown; keeping the entry as it is" >&2
+            return 0
+        fi
+
+        put "$1" "$(jq --null-input \
+            --arg version "${pin_tag#v}" \
+            --arg url "https://github.com/$2/releases/tag/${pin_tag}" \
+            --arg comment "${pin_comment}" \
+            '{"$comment": $comment, url: $url, version: $version}')"
+
+        echo "$1 ${pin_tag#v}" >&2
+    }
+
+    pin_release mirrord metalbear-co/mirrord <<'COMMENT'
+The latest mirrord that may be considered.
+COMMENT
 }
 
 [ "${refresh}" = no ] || update_releases

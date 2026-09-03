@@ -6,6 +6,9 @@
 # it.
 go 1.27.0
 
+# The latest air that may be considered.
+go:github.com/air-verse/air 1.67.4
+
 # The latest goimports that builds may consider.
 go:golang.org/x/tools/cmd/goimports 0.49.0
 
@@ -23,3 +26,6 @@ golangci-lint-langserver 0.0.12
 
 # The latest gotestsum that builds may consider.
 gotestsum 1.13.0
+
+# The latest mirrord that may be considered.
+mirrord 3.251.0
