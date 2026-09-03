@@ -524,3 +524,29 @@ HEADER
 } >"${out}"
 
 echo "wrote ${out}" >&2
+
+# --- Taskfile.yml
+
+taskfile="${TASKFILE:-${root}/Taskfile.yml}"
+
+jq -r '
+    to_entries
+    | sort_by(.key)
+    | .[]
+    | (.key | sub("^go:"; "") | split("/") | .[-1] | ascii_upcase | gsub("-"; "_")) as $name
+    | "  \($name): \(.value.version)"
+' "${releases}" >"${work}/taskvars"
+
+awk -v vars="${work}/taskvars" '
+    /# BEGIN generated/ {
+        print
+        while ((getline line < vars) > 0) print line
+        skipping = 1
+        next
+    }
+    /# END generated/ { skipping = 0 }
+    !skipping { print }
+' "${taskfile}" >"${work}/Taskfile.yml"
+mv -- "${work}/Taskfile.yml" "${taskfile}"
+
+echo "wrote ${taskfile}" >&2
