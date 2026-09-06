@@ -35,6 +35,8 @@ tasks:
   check:
     desc: warn about the tools on PATH that are not on pinned versions
     silent: true
+    # once per invocation, however many tasks depend on it
+    run: once
     cmds:
       - |
         found="$(go env GOVERSION || true)"
@@ -118,6 +120,8 @@ tasks:
 
   golangci-lint:
     desc: run golangci-lint with the given arguments
+    # check carries the version warning, so it prints once
+    deps: [check]
     cmds:
       - cmd: |
           if ! command -v golangci-lint >/dev/null 2>&1; then
@@ -125,9 +129,6 @@ tasks:
             echo "  https://github.com/golangci/golangci-lint/releases/tag/v{{.GOLANGCI_LINT}}" >&2
             exit 1
           fi
-          found="$(golangci-lint version --short 2>/dev/null || true)"
-          [ "${found:-unknown}" = "{{.GOLANGCI_LINT}}" ] ||
-            echo "warning: golangci-lint ${found:-of unknown version} on PATH; pinned {{.GOLANGCI_LINT}}" >&2
         silent: true
       - golangci-lint {{.ARGS}} {{.CLI_ARGS}}
 
