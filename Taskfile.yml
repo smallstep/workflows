@@ -18,6 +18,9 @@ vars:
   TEST_FLAGS: -race -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
   LINT_FLAGS: --timeout=30m
   GOLANGCI_CONFIG_URL: https://raw.githubusercontent.com/smallstep/workflows/main/.golangci.yml
+  # A golangci-lint config to use as it is, no fetch; empty means the
+  # repository's own .golangci.* when there is one, else GOLANGCI_CONFIG_URL.
+  GOLANGCI_CONFIG: ""
 
 tasks:
   pins:
@@ -147,6 +150,10 @@ tasks:
     vars:
       OWN_CONFIG:
         sh: |
+          if [ -n "{{.GOLANGCI_CONFIG}}" ]; then
+            echo "{{.GOLANGCI_CONFIG}}"
+            exit 0
+          fi
           for f in .golangci.yml .golangci.yaml .golangci.toml .golangci.json; do
             if [ -f "$f" ]; then
               echo "$f"
