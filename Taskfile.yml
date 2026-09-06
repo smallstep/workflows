@@ -1,29 +1,3 @@
-# The tasks every Go repository at Smallstep shares. A repository includes this
-# file from its own Taskfile.yml under a namespace of its choosing:
-#
-#   includes:
-#     common:
-#       taskfile: https://raw.githubusercontent.com/smallstep/workflows/main/Taskfile.yml
-#
-# There are two layers. The runners (goimports, gotestsum, govulncheck and
-# golangci-lint) run one tool at the version .versions pins, with whatever
-# arguments the caller passes. The stock tasks (fmt, lint, test and vuln) are
-# the defaults most repositories want, built on the runners. A repository's own
-# Taskfile.yml delegates to a stock task where the default fits and writes its
-# own on top of a runner where it does not; nothing here owns a repository's
-# fmt, lint or test.
-#
-# goimports, gotestsum, govulncheck and air run through `go run
-# <module>@<version>`, so they are the pinned version by construction.
-# golangci-lint is the exception: it breaks when built from source, so it runs
-# from PATH, and the runner warns when the version found is not the pinned one,
-# then runs it anyway; only a missing golangci-lint stops it. Go itself is not
-# pinned or enforced here: `check` warns about the version found against the
-# pin, and a repository's go.mod governs its toolchain. Nothing here fails on
-# a version mismatch: a warning names the tool, the version found and the pin.
-#
-# Every task body runs through Task's own POSIX shell on every platform, so
-# nothing here may assume bash, Unix-only tools or /-rooted paths.
 version: "3"
 
 vars:
@@ -59,18 +33,18 @@ tasks:
       - echo "mirrord       {{.MIRRORD}}"
 
   check:
-    desc: warn about the tools on PATH that are not the versions smallstep pins
+    desc: warn about the tools on PATH that are not on pinned versions
     silent: true
     cmds:
       - |
         found="$(go env GOVERSION || true)"
         [ "$found" = "go{{.GO}}" ] ||
-          echo "warning: $found on PATH; smallstep builds with go{{.GO}}" >&2
+          echo "warning: $found on PATH; pinned go{{.GO}}" >&2
       - |
         if command -v golangci-lint >/dev/null 2>&1; then
           found="$(golangci-lint version --short 2>/dev/null || true)"
           [ "${found:-unknown}" = "{{.GOLANGCI_LINT}}" ] ||
-            echo "warning: golangci-lint ${found:-of unknown version} on PATH; smallstep pins {{.GOLANGCI_LINT}}" >&2
+            echo "warning: golangci-lint ${found:-of unknown version} on PATH; pinned {{.GOLANGCI_LINT}}" >&2
         fi
       - |
         if command -v gotestsum >/dev/null 2>&1; then
@@ -78,7 +52,7 @@ tasks:
           found="${found##* }"
           found="${found#v}"
           [ -z "$found" ] || [ "$found" = "{{.GOTESTSUM}}" ] ||
-            echo "warning: gotestsum $found on PATH; smallstep pins {{.GOTESTSUM}} (tasks run the pinned one)" >&2
+            echo "warning: gotestsum $found on PATH; pinned {{.GOTESTSUM}} (tasks run the pinned one)" >&2
         fi
       - |
         # the module version baked into the binary, without awk: Task's own
@@ -91,7 +65,7 @@ tasks:
         $(go version -m "$(command -v goimports)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.GOIMPORTS}}" ] ||
-            echo "warning: goimports $found on PATH; smallstep pins {{.GOIMPORTS}} (tasks run the pinned one)" >&2
+            echo "warning: goimports $found on PATH; pinned {{.GOIMPORTS}} (tasks run the pinned one)" >&2
         fi
       - |
         # the module version baked into the binary, without awk: Task's own
@@ -104,7 +78,7 @@ tasks:
         $(go version -m "$(command -v govulncheck)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.GOVULNCHECK}}" ] ||
-            echo "warning: govulncheck $found on PATH; smallstep pins {{.GOVULNCHECK}} (tasks run the pinned one)" >&2
+            echo "warning: govulncheck $found on PATH; pinned {{.GOVULNCHECK}} (tasks run the pinned one)" >&2
         fi
       - |
         # the module version baked into the binary, without awk: Task's own
@@ -117,58 +91,57 @@ tasks:
         $(go version -m "$(command -v air)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.AIR}}" ] ||
-            echo "warning: air $found on PATH; smallstep pins {{.AIR}} (tasks run the pinned one)" >&2
+            echo "warning: air $found on PATH; pinned {{.AIR}} (tasks run the pinned one)" >&2
         fi
 
   # --- runners: one tool each, at the pinned version, with the caller's args
 
   goimports:
-    desc: run the pinned goimports with the given arguments
+    desc: run goimports with the given arguments
     cmds:
       - go run golang.org/x/tools/cmd/goimports@v{{.GOIMPORTS}} {{.ARGS}} {{.CLI_ARGS}}
 
   gotestsum:
-    desc: run the pinned gotestsum with the given arguments
+    desc: run gotestsum with the given arguments
     cmds:
       - go run gotest.tools/gotestsum@v{{.GOTESTSUM}} {{.ARGS}} {{.CLI_ARGS}}
 
   govulncheck:
-    desc: run the pinned govulncheck with the given arguments
+    desc: run govulncheck with the given arguments
     cmds:
       - go run golang.org/x/vuln/cmd/govulncheck@v{{.GOVULNCHECK}} {{.ARGS}} {{.CLI_ARGS}}
 
   air:
-    desc: run the pinned air (live reload for a Go service) with the given arguments
+    desc: run air with the given arguments
     cmds:
       - go run github.com/air-verse/air@v{{.AIR}} {{.ARGS}} {{.CLI_ARGS}}
 
   golangci-lint:
-    desc: run the golangci-lint on PATH, warning when it is not the pinned version
+    desc: run golangci-lint with the given arguments
     cmds:
       - cmd: |
           if ! command -v golangci-lint >/dev/null 2>&1; then
-            echo "golangci-lint is not on PATH; smallstep pins {{.GOLANGCI_LINT}}:" >&2
-            echo "  mise use -g golangci-lint@{{.GOLANGCI_LINT}}" >&2
+            echo "golangci-lint is not on PATH; pinned {{.GOLANGCI_LINT}}:" >&2
             echo "  https://github.com/golangci/golangci-lint/releases/tag/v{{.GOLANGCI_LINT}}" >&2
             exit 1
           fi
           found="$(golangci-lint version --short 2>/dev/null || true)"
           [ "${found:-unknown}" = "{{.GOLANGCI_LINT}}" ] ||
-            echo "warning: golangci-lint ${found:-of unknown version} on PATH; smallstep pins {{.GOLANGCI_LINT}} (mise use -g golangci-lint@{{.GOLANGCI_LINT}})" >&2
+            echo "warning: golangci-lint ${found:-of unknown version} on PATH; pinned {{.GOLANGCI_LINT}}" >&2
         silent: true
       - golangci-lint {{.ARGS}} {{.CLI_ARGS}}
 
   # --- stock tasks: the defaults, built on the runners
 
   fmt:
-    desc: format the Go sources with the pinned goimports and smallstep's import groups
+    desc: format the Go sources with goimports and the local import groups
     cmds:
       - task: goimports
         vars:
           ARGS: -local {{.GOIMPORTS_LOCAL}} -l -w .
 
   lint:
-    desc: lint with the pinned golangci-lint, using the repository's own config or smallstep's shared one
+    desc: lint with golangci-lint and govulncheck, using the repository's own config or the shared one
     deps: [check]
     vars:
       OWN_CONFIG:
@@ -179,25 +152,28 @@ tasks:
               break
             fi
           done
-    cmds:
-      # The shared config is fetched fresh, and the last copy serves when the
-      # network is away; a repository with a config of its own uses that, the
-      # same rule the goLint workflow applies.
-      - cmd: |
+      # The shared config is fetched on every run, into a temporary file whose
+      # extension tells golangci-lint the format; nothing is kept around.
+      CONFIG:
+        sh: |
           if [ -n "{{.OWN_CONFIG}}" ]; then
-            exit 0
+            echo "{{.OWN_CONFIG}}"
+          else
+            f="$(mktemp)" && mv "$f" "$f.yml" && echo "$f.yml"
           fi
-          mkdir -p .task
-          curl -fsSL -o .task/golangci.yml.tmp {{.GOLANGCI_CONFIG_URL}} &&
-            mv .task/golangci.yml.tmp .task/golangci.yml ||
-            [ -f .task/golangci.yml ]
+    cmds:
+      - defer: '{{if .OWN_CONFIG}}{{else}}rm -f "{{.CONFIG}}"{{end}}'
+      - cmd: '{{if .OWN_CONFIG}}{{else}}curl -fsSL -o "{{.CONFIG}}" "{{.GOLANGCI_CONFIG_URL}}"{{end}}'
         silent: true
       - task: golangci-lint
         vars:
-          ARGS: run {{if .OWN_CONFIG}}{{else}}--config .task/golangci.yml{{end}} {{.LINT_FLAGS}}
+          ARGS: run --config "{{.CONFIG}}" {{.LINT_FLAGS}}
+      - task: govulncheck
+        vars:
+          ARGS: ./...
 
   test:
-    desc: run the tests with the pinned gotestsum
+    desc: run the tests with gotestsum
     deps: [check]
     cmds:
       - task: gotestsum
@@ -205,7 +181,7 @@ tasks:
           ARGS: -- {{.TEST_FLAGS}}
 
   vuln:
-    desc: scan the module with the pinned govulncheck
+    desc: scan the module with govulncheck
     cmds:
       - task: govulncheck
         vars:
