@@ -63,21 +63,21 @@ tasks:
     silent: true
     cmds:
       - |
-        found="$(go env GOVERSION)"
+        found="$(go env GOVERSION || true)"
         [ "$found" = "go{{.GO}}" ] ||
           echo "warning: $found on PATH; smallstep builds with go{{.GO}}" >&2
       - |
         if command -v golangci-lint >/dev/null 2>&1; then
-          found="$(golangci-lint version --short 2>/dev/null)"
-          [ "$found" = "{{.GOLANGCI_LINT}}" ] ||
-            echo "warning: golangci-lint $found on PATH; smallstep pins {{.GOLANGCI_LINT}}" >&2
+          found="$(golangci-lint version --short 2>/dev/null || true)"
+          [ "${found:-unknown}" = "{{.GOLANGCI_LINT}}" ] ||
+            echo "warning: golangci-lint ${found:-of unknown version} on PATH; smallstep pins {{.GOLANGCI_LINT}}" >&2
         fi
       - |
         if command -v gotestsum >/dev/null 2>&1; then
-          found="$(gotestsum --version 2>/dev/null)"
+          found="$(gotestsum --version 2>/dev/null || true)"
           found="${found##* }"
           found="${found#v}"
-          [ "$found" = "{{.GOTESTSUM}}" ] ||
+          [ -z "$found" ] || [ "$found" = "{{.GOTESTSUM}}" ] ||
             echo "warning: gotestsum $found on PATH; smallstep pins {{.GOTESTSUM}} (tasks run the pinned one)" >&2
         fi
       - |
@@ -86,9 +86,9 @@ tasks:
         if command -v goimports >/dev/null 2>&1; then
           found=""
           while read -r kind _ version _; do
-            [ "$kind" = "mod" ] && found="${version#v}"
+            if [ "$kind" = "mod" ]; then found="${version#v}"; fi
           done <<EOF
-        $(go version -m "$(command -v goimports)" 2>/dev/null)
+        $(go version -m "$(command -v goimports)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.GOIMPORTS}}" ] ||
             echo "warning: goimports $found on PATH; smallstep pins {{.GOIMPORTS}} (tasks run the pinned one)" >&2
@@ -99,9 +99,9 @@ tasks:
         if command -v govulncheck >/dev/null 2>&1; then
           found=""
           while read -r kind _ version _; do
-            [ "$kind" = "mod" ] && found="${version#v}"
+            if [ "$kind" = "mod" ]; then found="${version#v}"; fi
           done <<EOF
-        $(go version -m "$(command -v govulncheck)" 2>/dev/null)
+        $(go version -m "$(command -v govulncheck)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.GOVULNCHECK}}" ] ||
             echo "warning: govulncheck $found on PATH; smallstep pins {{.GOVULNCHECK}} (tasks run the pinned one)" >&2
@@ -112,9 +112,9 @@ tasks:
         if command -v air >/dev/null 2>&1; then
           found=""
           while read -r kind _ version _; do
-            [ "$kind" = "mod" ] && found="${version#v}"
+            if [ "$kind" = "mod" ]; then found="${version#v}"; fi
           done <<EOF
-        $(go version -m "$(command -v air)" 2>/dev/null)
+        $(go version -m "$(command -v air)" 2>/dev/null || true)
         EOF
           [ -z "$found" ] || [ "$found" = "{{.AIR}}" ] ||
             echo "warning: air $found on PATH; smallstep pins {{.AIR}} (tasks run the pinned one)" >&2
@@ -152,9 +152,9 @@ tasks:
             echo "  https://github.com/golangci/golangci-lint/releases/tag/v{{.GOLANGCI_LINT}}" >&2
             exit 1
           fi
-          found="$(golangci-lint version --short 2>/dev/null)"
-          [ "$found" = "{{.GOLANGCI_LINT}}" ] ||
-            echo "warning: golangci-lint $found on PATH; smallstep pins {{.GOLANGCI_LINT}} (mise use -g golangci-lint@{{.GOLANGCI_LINT}})" >&2
+          found="$(golangci-lint version --short 2>/dev/null || true)"
+          [ "${found:-unknown}" = "{{.GOLANGCI_LINT}}" ] ||
+            echo "warning: golangci-lint ${found:-of unknown version} on PATH; smallstep pins {{.GOLANGCI_LINT}} (mise use -g golangci-lint@{{.GOLANGCI_LINT}})" >&2
         silent: true
       - golangci-lint {{.ARGS}} {{.CLI_ARGS}}
 
