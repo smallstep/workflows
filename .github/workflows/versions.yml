@@ -12,6 +12,12 @@ jobs:
   sync:
     name: Sync
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: ci/versions
+      MISE_MINIMUM_RELEASE_AGE: 0 # versions are pinned
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -43,42 +49,60 @@ jobs:
           echo "found=true" >> "${GITHUB_OUTPUT}"
           git --no-pager diff -- .versions .versions.json
 
-      - name: Setup the SSH signing key
-        if: steps.changes.outputs.found == 'true'
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: ${{ secrets.STEP_TRAVIS_CI_GH_PRIVATE_SIGNING_KEY }}
-
-      - name: Open or update the pull request
+      - name: Check nobody else wrote the branch
         if: steps.changes.outputs.found == 'true'
         env:
-          BASE: ${{ github.event.repository.default_branch }}
-          BRANCH: ci/versions
-          GH_TOKEN: ${{ secrets.PAT }}
-          GIT_EMAIL: eng+ci@smallstep.com
-          GIT_NAME: step-ci
-          SIGNING_KEY: ${{ secrets.STEP_TRAVIS_CI_GH_PUBLIC_SIGNING_KEY }}
-          TOKEN: ${{ secrets.PAT }}
+          BOT: 41898282+github-actions[bot]@users.noreply.github.com
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          remote="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-          if git ls-remote --exit-code --heads "${remote}" "${BRANCH}" >/dev/null 2>&1; then
-            git fetch --depth 1 "${remote}" "${BRANCH}"
-
-            author="$(git log -1 --format='%ae' FETCH_HEAD)"
-            if [ "${author}" != "${GIT_EMAIL}" ]; then
-              written_by="${BRANCH} was last written by ${author}"
-              echo "::error title=Sync versions::${written_by}; refusing to force push over it"
-              exit 1
-            fi
-
-            if git diff --quiet FETCH_HEAD -- .versions .versions.json; then
-              echo "${BRANCH} already carries these versions"
-              exit 0
-            fi
+          if ! author="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${BRANCH}" \
+            --jq '.commit.author.email' 2>/dev/null)"; then
+            echo "${BRANCH} is not there yet"
+            exit 0
           fi
+
+          if [ "${author}" != "${BOT}" ]; then
+            written_by="${BRANCH} was last written by ${author}"
+            echo "::error title=Sync versions::${written_by}; refusing to write over it"
+            exit 1
+          fi
+
+      - name: Setup mise
+        if: steps.changes.outputs.found == 'true'
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          minimum_release_age: 7d
+          install: false
+
+      - name: Check mise resolves every pin
+        if: steps.changes.outputs.found == 'true'
+        run: |
+          set -euo pipefail
+
+          failed=0
+
+          while read -r key value; do
+            case "${key}" in
+              ''|\#*) continue ;;
+            esac
+
+            if [ "$(mise latest "${key}@${value}" 2>&1)" = "${value}" ]; then
+              echo "ok       ${key} ${value}"
+            else
+              echo "::error::mise cannot resolve ${key}@${value}"
+              failed=1
+            fi
+          done < .versions
+
+          exit "${failed}"
+
+      - name: Describe the change
+        id: describe
+        if: steps.changes.outputs.found == 'true'
+        run: |
+          set -euo pipefail
 
           old="$(mktemp)"
           git show 'HEAD:.versions.json' > "${old}" 2>/dev/null || echo '{}' > "${old}"
@@ -102,7 +126,7 @@ jobs:
           # shellcheck disable=SC2016
           bump() { printf '%s `%s` to [`%s`](%s).\n' "$1" "$2" "$3" "$4"; }
 
-          body="$(mktemp)"
+          body="${RUNNER_TEMP}/body.md"
           summary=""
 
           while IFS=$'\t' read -r name version url; do
@@ -131,44 +155,44 @@ jobs:
           FALLBACK
           fi
 
-          git config user.name "${GIT_NAME}"
-          git config user.email "${GIT_EMAIL}"
-          git config user.signingkey "${SIGNING_KEY}"
-          git config commit.gpgsign true
-          git config gpg.format ssh
+          {
+            echo "title=${title}"
+            echo "body=${body}"
+            # A run that only reworded a comment is not a dependency bump, so it
+            # does not carry the label either.
+            if [ -n "${summary}" ]; then
+              echo "labels=dependencies"
+            else
+              echo "labels="
+            fi
+          } >> "${GITHUB_OUTPUT}"
 
-          git switch --create "${BRANCH}"
-          git add .versions .versions.json
-          git commit --message "${title}"
-          git push --force "${remote}" "${BRANCH}"
+      - name: Open or update the pull request
+        id: pr
+        if: steps.changes.outputs.found == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          base: ${{ github.event.repository.default_branch }}
+          branch: ${{ env.BRANCH }}
+          add-paths: |
+            .versions
+            .versions.json
+          sign-commits: true
+          commit-message: ${{ steps.describe.outputs.title }}
+          title: ${{ steps.describe.outputs.title }}
+          body-path: ${{ steps.describe.outputs.body }}
+          labels: ${{ steps.describe.outputs.labels }}
 
-          state="$(gh pr view "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
-            --json state --jq '.state' 2>/dev/null || true)"
+      - name: Drop the label from a run that bumped nothing
+        if: >-
+          steps.changes.outputs.found == 'true'
+          && steps.describe.outputs.labels == ''
+          && steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: |
+          set -euo pipefail
 
-          if [ "${state}" = "OPEN" ]; then
-            # versions moved on, so the title and body have to move with
-            # them; otherwise the pull request still advertises the older bump.
-            gh pr edit "${BRANCH}" \
-              --repo "${GITHUB_REPOSITORY}" \
-              --title "${title}" \
-              --body-file "${body}"
-
-            echo "updated the pull request that was already open for ${BRANCH}"
-          else
-            gh pr create \
-              --repo "${GITHUB_REPOSITORY}" \
-              --base "${BASE}" \
-              --head "${BRANCH}" \
-              --title "${title}" \
-              --body-file "${body}"
-          fi
-
-          # if there's no version bump then the PR doesn't get a "dependencies"
-          # label.
-          if [ -n "${summary}" ]; then
-            gh pr edit "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
-              --add-label dependencies
-          else
-            gh pr edit "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
-              --remove-label dependencies || true
-          fi
+          gh pr edit "${NUMBER}" --repo "${GITHUB_REPOSITORY}" \
+            --remove-label dependencies || true
