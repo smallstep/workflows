@@ -27,8 +27,8 @@
   "golangci-lint": {
     "$comment": "The latest golangci-lint release that builds may consider.",
     "toolchain": "1.27.0",
-    "url": "https://github.com/golangci/golangci-lint/releases/tag/v2.13.1",
-    "version": "2.13.1"
+    "url": "https://github.com/golangci/golangci-lint/releases/tag/v2.13.2",
+    "version": "2.13.2"
   },
   "golangci-lint-langserver": {
     "$comment": "The latest golangci-lint-langserver that builds may consider.",
@@ -42,7 +42,7 @@
   },
   "mirrord": {
     "$comment": "The latest mirrord that may be considered.",
-    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.251.0",
-    "version": "3.251.0"
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.252.1",
+    "version": "3.252.1"
   }
 }
