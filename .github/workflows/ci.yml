@@ -75,13 +75,17 @@ jobs:
           minimum_release_age: 7d
           install: false
 
+      - name: Install Task
+        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
+        with:
+          version: 3.x
+
       - name: Check the shared Taskfile parses and lists its tasks
         shell: bash
         run: |
           set -euo pipefail
-          mise install task@3.53.1
-          mise exec task@3.53.1 -- task --list-all
-          mise exec task@3.53.1 -- task pins
+          task --list-all
+          task pins
 
       # NOTE(@azazeal): .versions doubles as a .tool-versions, so we check
       # whether mise can resolve
