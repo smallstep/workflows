@@ -51,16 +51,21 @@ jobs:
           go-version: ${{ steps.pins.outputs.go }}
           check-latest: false
 
-      - name: Check .versions agrees with .versions.json
+      - name: Check .versions and Taskfile.yml agree with .versions.json
         shell: bash
         run: |
           set -euo pipefail
 
           cp .versions "${RUNNER_TEMP}/versions.committed"
+          cp Taskfile.yml "${RUNNER_TEMP}/Taskfile.committed"
           .github/scripts/generate-versions --no-refresh
 
           if ! diff -u "${RUNNER_TEMP}/versions.committed" .versions; then
             echo "::error::.versions is not what .versions.json flattens to; run .github/scripts/generate-versions"
+            exit 1
+          fi
+          if ! diff -u "${RUNNER_TEMP}/Taskfile.committed" Taskfile.yml; then
+            echo "::error::Taskfile.yml does not carry the pins in .versions.json; run .github/scripts/generate-versions"
             exit 1
           fi
 
@@ -69,6 +74,18 @@ jobs:
         with:
           minimum_release_age: 7d
           install: false
+
+      - name: Install Task
+        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
+        with:
+          version: 3.x
+
+      - name: Check the shared Taskfile parses and lists its tasks
+        shell: bash
+        run: |
+          set -euo pipefail
+          task --list-all
+          task pins
 
       # NOTE(@azazeal): .versions doubles as a .tool-versions, so we check
       # whether mise can resolve
