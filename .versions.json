@@ -1,8 +1,8 @@
 {
   "go": {
     "$comment": "The latest Go that builds may consider. For this version to be present here, three things are true: 1) the golangci-lint version below can lint it, 2) actions/setup-go can install it, and 3) Docker Hub has published images for it.",
-    "url": "https://go.dev/doc/devel/release#go1.27.0",
-    "version": "1.27.0"
+    "url": "https://go.dev/doc/devel/release#go1.27.1",
+    "version": "1.27.1"
   },
   "go:github.com/air-verse/air": {
     "$comment": "The latest air that may be considered.",

@@ -4,7 +4,7 @@
 # three things are true: 1) the golangci-lint version below can lint it, 2)
 # actions/setup-go can install it, and 3) Docker Hub has published images for
 # it.
-go 1.27.0
+go 1.27.1
 
 # The latest air that may be considered.
 go:github.com/air-verse/air 1.67.4
