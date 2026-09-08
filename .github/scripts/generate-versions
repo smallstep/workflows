@@ -215,8 +215,8 @@ update_releases() {
             --arg toolchain "${toolchain}" \
             --arg url "https://github.com/${GOLANGCI_LINT_REPOSITORY}/releases/tag/${version}" \
             '{
-                "$comment": "The latest golangci-lint release that builds may "
-                    + "consider.",
+                "$comment": ("The latest golangci-lint release that builds may "
+                    + "consider."),
                 url: $url,
                 version: $version,
                 toolchain: $toolchain
@@ -308,11 +308,11 @@ update_releases() {
                 --arg version "${selected}" \
                 --arg url "https://go.dev/doc/devel/release#go${selected}" \
                 '{
-                    "$comment": "The latest Go that builds may consider. For "
+                    "$comment": ("The latest Go that builds may consider. For "
                         + "this version to be present here, three things are "
                         + "true: 1) the golangci-lint version below can lint "
                         + "it, 2) actions/setup-go can install it, and 3) "
-                        + "Docker Hub has published images for it.",
+                        + "Docker Hub has published images for it."),
                     url: $url,
                     version: $version
                 }')"
