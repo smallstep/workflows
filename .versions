@@ -28,4 +28,4 @@ golangci-lint-langserver 0.0.12
 gotestsum 1.13.0
 
 # The latest mirrord that may be considered.
-mirrord 3.253.0
+mirrord 3.254.0
