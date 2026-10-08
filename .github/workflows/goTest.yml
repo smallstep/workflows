@@ -9,6 +9,10 @@ on:
         required: false
         type: string
         default: go.step.sm/,github.com/smallstep/
+      cache-key-suffix:
+        required: false
+        type: string
+        default: "" # set when a repository runs more than one test job, so each keeps its own Go cache
       gotestsum-version:
         required: false
         type: string
@@ -116,8 +120,51 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
-          cache: true
-          cache-dependency-path: "**/go.sum"
+          # NOTE: setup-go's cache key is the same in every goCI job, so whichever
+          # job finishes first (usually govulncheck) saves its build cache and the
+          # test job's -race/coverage build output is never stored. The test job
+          # keeps its own cache below instead.
+          cache: false
+
+      - name: Locate Go caches
+        id: go-env
+        shell: bash
+        env:
+          CACHE_KEY_SUFFIX: ${{ inputs.cache-key-suffix }}
+        run: |
+          set -euo pipefail
+
+          case "${CACHE_KEY_SUFFIX}" in
+          *,* | *$'\n'*)
+            echo "::error::cache-key-suffix must not contain commas or newlines"
+            exit 1
+            ;;
+          esac
+
+          gocache="$(go env GOCACHE)"
+          gomodcache="$(go env GOMODCACHE)"
+          goversion="$(go env GOVERSION)"
+
+          # The suffix comes first so that the restore-keys prefix of a job
+          # without one never matches another job's entries. ImageOS keeps cgo
+          # objects from outliving the system headers they were built against.
+          prefix="go-test-${CACHE_KEY_SUFFIX:+${CACHE_KEY_SUFFIX}-}${RUNNER_OS}-${ImageOS:-unknown}-${RUNNER_ARCH}-${goversion}-"
+
+          {
+            echo "gocache=${gocache}"
+            echo "gomodcache=${gomodcache}"
+            echo "key-prefix=${prefix}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Restore Go caches
+        id: go-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ steps.go-env.outputs.gocache }}
+            ${{ steps.go-env.outputs.gomodcache }}
+          key: ${{ steps.go-env.outputs.key-prefix }}${{ hashFiles('**/go.sum', '**/go.work.sum') }}
+          restore-keys: ${{ steps.go-env.outputs.key-prefix }}
 
       - name: Setup SSH key for private dependencies
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
@@ -180,6 +227,26 @@ jobs:
           TEST_CMD: ${{ inputs.test-command }}
           GOTESTSUM_JSONFILE: gotestsum.json
         run: eval "${TEST_CMD}"
+
+      # Go keeps test results in GOCACHE too. Expire them before saving, so
+      # tests whose outcome depends on things Go can't track (Docker, the
+      # network, the clock) keep running for real instead of replaying a pass.
+      - name: Expire cached test results
+        if: steps.go-cache.outputs.cache-hit != 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        shell: bash
+        run: go clean -testcache
+
+      # Only the default branch saves, so feature branches don't fill the
+      # repository's cache quota with near-duplicate entries; they restore the
+      # default branch's entry instead.
+      - name: Save Go caches
+        if: steps.go-cache.outputs.cache-hit != 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ steps.go-env.outputs.gocache }}
+            ${{ steps.go-env.outputs.gomodcache }}
+          key: ${{ steps.go-cache.outputs.cache-primary-key }}
 
       - name: Annotate Test Suite Results
         if: ${{ (success() || failure()) && hashFiles('gotestsum.json') != '' }}
