@@ -91,7 +91,7 @@ jobs:
 - Shell steps use `set -euo pipefail` and pass inputs through `env:` rather than interpolating `${{ }}` into `run:` (zizmor's template-injection check).
 - Caller-supplied command strings (`build-command`, `test-command`, `codeql-build-cmd`) are `eval`ed on purpose.
 - Formatting: `.editorconfig` says tabs for Go, two-space indents for YAML and JSON, four spaces for `.github/scripts/*`, LF endings everywhere.
-- Go toolchain moves are gated: `go` in `.versions` only advances when golangci-lint can lint it, `actions/setup-go` can install it, and Docker Hub has the image, and only after a 7-day cooldown. Do not bump `go` by hand.
+- Go toolchain moves are gated: `go` in `.versions` only advances when golangci-lint can lint it, `actions/setup-go` can install it, and Docker Hub has the image. Unlike every other entry, it skips the 7-day cooldown. Do not bump `go` by hand.
 
 ## The shared `.golangci.yml`
 

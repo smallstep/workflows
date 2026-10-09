@@ -27,7 +27,9 @@
 #
 # 3. Versions are considered once they've been out for at least COOLDOWN_DAYS,
 #    so a release that turns out to be broken has some time to be pulled or
-#    fixed.
+#    fixed. Go is the exception: it moves as soon as it clears the checks in 2,
+#    since its releases often carry security fixes, and CI, which follows the
+#    stable release, takes them in that early anyway.
 #
 # With --no-refresh nothing upstream is consulted and .versions is rebuilt from
 # the .versions.json already on disk, which is how CI checks the two agree
@@ -75,20 +77,6 @@ settled() {
     jq --exit-status --null-input \
         --arg when "$1" --argjson days "${COOLDOWN_DAYS}" \
         '(now - ($when | fromdateiso8601)) >= ($days * 86400)' >/dev/null
-}
-
-# tagged <repository> <tag> reports when a git tag was laid down, ISO 8601. Go
-# publishes no GitHub releases, so its dates come from the tags themselves.
-tagged() {
-    tagged_ref="$(gh api "repos/$1/git/refs/tags/$2")"
-    tagged_type="$(printf '%s' "${tagged_ref}" | jq -r '.object.type')"
-    tagged_sha="$(printf '%s' "${tagged_ref}" | jq -r '.object.sha')"
-
-    if [ "${tagged_type}" = tag ]; then
-        gh api "repos/$1/git/tags/${tagged_sha}" --jq '.tagger.date'
-    else
-        gh api "repos/$1/git/commits/${tagged_sha}" --jq '.committer.date'
-    fi
 }
 
 # at_most <a> <b> reports whether Go version a sits at or below b. Only the
@@ -277,12 +265,6 @@ update_releases() {
             if ! curl --fail --silent --location --output /dev/null \
                 "https://hub.docker.com/v2/repositories/library/golang/tags/${candidate}"; then
                 echo "go ${candidate} is out, but Docker Hub has no golang:${candidate} yet" >&2
-                continue
-            fi
-
-            cut="$(tagged golang/go "go${candidate}")"
-            if ! settled "${cut}"; then
-                echo "go ${candidate} came out on ${cut%%T*}, inside the ${COOLDOWN_DAYS} day cooldown" >&2
                 continue
             fi
 
