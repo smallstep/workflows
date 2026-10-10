@@ -11,8 +11,8 @@
   },
   "go:golang.org/x/tools/cmd/goimports": {
     "$comment": "The latest goimports that builds may consider.",
-    "url": "https://pkg.go.dev/golang.org/x/tools/cmd/goimports@v0.50.0",
-    "version": "0.50.0"
+    "url": "https://pkg.go.dev/golang.org/x/tools/cmd/goimports@v0.51.0",
+    "version": "0.51.0"
   },
   "go:golang.org/x/tools/gopls": {
     "$comment": "The latest gopls that builds may consider.",
@@ -42,7 +42,7 @@
   },
   "mirrord": {
     "$comment": "The latest mirrord that may be considered.",
-    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.267.0",
-    "version": "3.267.0"
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.268.0",
+    "version": "3.268.0"
   }
 }
