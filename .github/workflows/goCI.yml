@@ -40,6 +40,10 @@ on:
         required: false
         type: string
         default: ""
+      test-cache-key-suffix:
+        required: false
+        type: string
+        default: "" # set when a repository calls goCI more than once, so each test job keeps its own Go cache
       golangci-lint-version:
         required: false
         type: string
@@ -196,6 +200,7 @@ jobs:
     if: inputs.run-test
     with:
       runs-on: ${{ inputs.test-runs-on || inputs.runs-on || 'ubuntu-latest' }}
+      cache-key-suffix: ${{ inputs.test-cache-key-suffix }}
       goprivate: ${{ inputs.goprivate }}
       only-latest-golang: ${{ inputs.only-latest-golang }}
       os-dependencies: ${{ inputs.test-os-dependencies || inputs.os-dependencies || '' }}
