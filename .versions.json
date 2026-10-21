@@ -1,8 +1,8 @@
 {
   "go": {
     "$comment": "The latest Go that builds may consider. For this version to be present here, three things are true: 1) the golangci-lint version below can lint it, 2) actions/setup-go can install it, and 3) Docker Hub has published images for it.",
-    "url": "https://go.dev/doc/devel/release#go1.27.2",
-    "version": "1.27.2"
+    "url": "https://go.dev/doc/devel/release#go1.27.3",
+    "version": "1.27.3"
   },
   "go:github.com/air-verse/air": {
     "$comment": "The latest air that may be considered.",
@@ -21,8 +21,8 @@
   },
   "go:golang.org/x/vuln/cmd/govulncheck": {
     "$comment": "The latest govulncheck that builds may consider.",
-    "url": "https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck@v1.8.0",
-    "version": "1.8.0"
+    "url": "https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck@v1.9.0",
+    "version": "1.9.0"
   },
   "golangci-lint": {
     "$comment": "The latest golangci-lint release that builds may consider.",
@@ -42,7 +42,7 @@
   },
   "mirrord": {
     "$comment": "The latest mirrord that may be considered.",
-    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.271.0",
-    "version": "3.271.0"
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.273.0",
+    "version": "3.273.0"
   }
 }
