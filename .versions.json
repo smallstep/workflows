@@ -16,8 +16,8 @@
   },
   "go:golang.org/x/tools/gopls": {
     "$comment": "The latest gopls that builds may consider.",
-    "url": "https://pkg.go.dev/golang.org/x/tools/gopls@v0.23.0",
-    "version": "0.23.0"
+    "url": "https://pkg.go.dev/golang.org/x/tools/gopls@v0.24.0",
+    "version": "0.24.0"
   },
   "go:golang.org/x/vuln/cmd/govulncheck": {
     "$comment": "The latest govulncheck that builds may consider.",
@@ -42,7 +42,7 @@
   },
   "mirrord": {
     "$comment": "The latest mirrord that may be considered.",
-    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.273.0",
-    "version": "3.273.0"
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.274.0",
+    "version": "3.274.0"
   }
 }
