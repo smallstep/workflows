@@ -13,7 +13,7 @@ go:github.com/air-verse/air 1.67.4
 go:golang.org/x/tools/cmd/goimports 0.52.0
 
 # The latest gopls that builds may consider.
-go:golang.org/x/tools/gopls 0.23.0
+go:golang.org/x/tools/gopls 0.24.0
 
 # The latest govulncheck that builds may consider.
 go:golang.org/x/vuln/cmd/govulncheck 1.9.0
@@ -28,4 +28,4 @@ golangci-lint-langserver 0.0.12
 gotestsum 1.13.0
 
 # The latest mirrord that may be considered.
-mirrord 3.273.0
+mirrord 3.274.0
