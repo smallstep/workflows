@@ -40,14 +40,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          if git diff --quiet -- .versions .versions.json; then
+          if git diff --quiet -- .versions .versions.json Taskfile.yml; then
             echo "found=false" >> "${GITHUB_OUTPUT}"
             echo "already up to date"
             exit 0
           fi
 
           echo "found=true" >> "${GITHUB_OUTPUT}"
-          git --no-pager diff -- .versions .versions.json
+          git --no-pager diff -- .versions .versions.json Taskfile.yml
 
       - name: Check nobody else wrote the branch
         if: steps.changes.outputs.found == 'true'
@@ -177,6 +177,7 @@ jobs:
           add-paths: |
             .versions
             .versions.json
+            Taskfile.yml
           sign-commits: true
           commit-message: ${{ steps.describe.outputs.title }}
           title: ${{ steps.describe.outputs.title }}
