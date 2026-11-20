@@ -42,7 +42,7 @@
   },
   "mirrord": {
     "$comment": "The latest mirrord that may be considered.",
-    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.286.0",
-    "version": "3.286.0"
+    "url": "https://github.com/metalbear-co/mirrord/releases/tag/3.287.0",
+    "version": "3.287.0"
   }
 }
